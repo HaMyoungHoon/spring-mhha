@@ -27,11 +27,13 @@ dependencies {
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
-    implementation("org.springdoc:springdoc-openapi-ui:1.8.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
 
     implementation("dev.akkinoc.util:yaml-resource-bundle:2.12.3")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1")
+
+    implementation("io.jsonwebtoken:jjwt-api:0.12.5")
 
     implementation("com.google.code.gson:gson:2.11.0")
 
