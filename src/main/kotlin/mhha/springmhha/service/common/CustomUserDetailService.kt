@@ -2,7 +2,7 @@ package mhha.springmhha.service.common
 
 import mhha.springmhha.advice.exception.UserNotFoundException
 import mhha.springmhha.model.common.CustomUserModel
-import mhha.springmhha.repository.asp.UserDataRepository
+import mhha.springmhha.repository.sqlASP.UserDataRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.stereotype.Service

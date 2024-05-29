@@ -1,7 +1,7 @@
-package mhha.springmhha.service.asp
+package mhha.springmhha.service.sqlASP
 
-import mhha.springmhha.repository.asp.UserDataRepository
-import mhha.springmhha.repository.asp.UserRoleListRepository
+import mhha.springmhha.repository.sqlASP.UserDataRepository
+import mhha.springmhha.repository.sqlASP.UserRoleListRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -11,7 +11,7 @@ class UserDataService {
     @Autowired lateinit var userRoleListRepository: UserRoleListRepository
 
     fun getUserData(id: String) = userDataRepository.findById(id)
-    fun getAllUserData() = userDataRepository.findAllByThisIndexNot(0)
+    fun getAllUserData() = userDataRepository.findAll()
 
-    fun getRoleList() = userRoleListRepository.findAllByThisIndexNot(0)
+    fun getRoleList() = userRoleListRepository.findAll()
 }

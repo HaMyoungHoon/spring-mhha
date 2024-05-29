@@ -1,4 +1,4 @@
-package mhha.springmhha.model.asp
+package mhha.springmhha.model.sqlASP
 
 enum class UserRole(var flag: Int) {
     None(0),

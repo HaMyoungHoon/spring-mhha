@@ -1,4 +1,4 @@
-package mhha.springmhha.model.asp
+package mhha.springmhha.model.sqlASP
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.persistence.Column

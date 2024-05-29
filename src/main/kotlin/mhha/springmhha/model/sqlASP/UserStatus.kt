@@ -1,4 +1,4 @@
-package mhha.springmhha.model.asp
+package mhha.springmhha.model.sqlASP
 
 enum class UserStatus(var index: Int) {
     None(0),

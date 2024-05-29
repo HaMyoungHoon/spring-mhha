@@ -17,30 +17,30 @@ import java.util.Properties
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = ["mhha.springmhha.repository.asp"],
-        entityManagerFactoryRef = "entityManagerFactory",
-        transactionManagerRef = "transactionManager",
+        basePackages = ["mhha.springmhha.repository.sqlASP"],
+        entityManagerFactoryRef = ASPJpaConfig.ENTITY_MANAGER,
+        transactionManagerRef = ASPJpaConfig.TRANSACTION_MANAGER,
         enableDefaultTransactions = true)
 class ASPJpaConfig {
     companion object {
         const val DATA_SOURCE = "ASPDataSource"
+        const val ENTITY_MANAGER = "aspEntityManagerFactory"
+        const val TRANSACTION_MANAGER = "aspTransactionManager"
     }
     @Bean(name = [DATA_SOURCE])
     @ConfigurationProperties(prefix = "spring.datasource.asp-mssql")
     fun dataSource(): HikariDataSource = DataSourceBuilder.create().type(HikariDataSource::class.java).build()
     @Bean
-    fun entityManagerFactory(): LocalContainerEntityManagerFactoryBean = LocalContainerEntityManagerFactoryBean().apply {
+    fun aspEntityManagerFactory(): LocalContainerEntityManagerFactoryBean = LocalContainerEntityManagerFactoryBean().apply {
         this.dataSource = dataSource()
-        this.setPackagesToScan("mhha.springmhha.model.asp")
+        this.setPackagesToScan("mhha.springmhha.model.sqlASP")
         this.jpaVendorAdapter = HibernateJpaVendorAdapter()
         this.setJpaProperties(additionalProperties())
     }
     @Bean
-    fun transactionManager(): PlatformTransactionManager = JpaTransactionManager().apply {
-        this.entityManagerFactory = entityManagerFactory().`object`
+    fun aspTransactionManager(): PlatformTransactionManager = JpaTransactionManager().apply {
+        this.entityManagerFactory = aspEntityManagerFactory().`object`
     }
-    @Bean
-    fun exceptionTranslation() = PersistenceExceptionTranslationPostProcessor()
     fun additionalProperties(): Properties = Properties().apply {
         this.setProperty("hibernate.dialect", "org.hibernate.dialect.SQLServerDialect")
     }

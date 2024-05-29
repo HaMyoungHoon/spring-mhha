@@ -1,7 +1,7 @@
 package mhha.springmhha.model.common
 
-import mhha.springmhha.model.asp.UserRole
-import mhha.springmhha.model.asp.UserStatus
+import mhha.springmhha.model.sqlASP.UserRole
+import mhha.springmhha.model.sqlASP.UserStatus
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
