@@ -3,9 +3,9 @@ package mhha.springmhha.controller.angular
 import io.swagger.v3.oas.annotations.tags.Tag
 import mhha.springmhha.advice.exception.NotValidOperationException
 import mhha.springmhha.model.common.IRestResult
-import mhha.springmhha.model.sqlSpring.angular.*
+import mhha.springmhha.model.sqlSpring.angular.doc.*
 import mhha.springmhha.service.common.ResponseService
-import mhha.springmhha.service.sqlSpring.AngularDocService
+import mhha.springmhha.service.sqlSpring.AngularService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -15,22 +15,22 @@ import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "DocMenuController")
 @RestController
-@RequestMapping(value = ["/angular/doc/menu"])
+@RequestMapping(value = ["/angular/doc"])
 class DocMenuController {
     @Autowired lateinit var responseService: ResponseService
-    @Autowired lateinit var angularDocService: AngularDocService
+    @Autowired lateinit var angularService: AngularService
 
     @GetMapping(value = ["/get/doc"])
     fun getDocPage(): IRestResult {
-        return responseService.getResult(angularDocService.getPage())
+        return responseService.getResult(angularService.getPage())
     }
     @GetMapping(value = ["/get/doc/{index}"])
     fun getDocPage(@PathVariable index: Long): IRestResult {
-        return responseService.getResult(angularDocService.getPageByIndex(index))
+        return responseService.getResult(angularService.getPageByIndex(index))
     }
     @PostMapping(value = ["/post/doc/test"])
     fun postDocPage(): IRestResult {
-        if (angularDocService.getPageByName("accordion") != null) {
+        if (angularService.getPageByName("accordion") != null) {
             throw NotValidOperationException()
         }
 
@@ -226,6 +226,6 @@ class DocMenuController {
             }.setChild())
         }
 
-        return responseService.getResult(angularDocService.savePage(temp))
+        return responseService.getResult(angularService.savePage(temp))
     }
 }

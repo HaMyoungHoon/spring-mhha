@@ -1,5 +1,6 @@
 package mhha.springmhha.config
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Contact
 import io.swagger.v3.oas.models.info.Info
@@ -8,7 +9,7 @@ import io.swagger.v3.oas.models.servers.Server
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-
+@OpenAPIDefinition(servers = [io.swagger.v3.oas.annotations.servers.Server(url = "/", description = "defaultPath")])
 @Configuration
 class SwaggerConfiguration {
   @Bean fun openApi(): OpenAPI = OpenAPI()
