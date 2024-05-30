@@ -61,3 +61,7 @@ notFoundDept:
 notFoundSystem:
   code: "-1014"
   msg: "해당 시스템은 존재하지 않습니다."
+
+notValidOperation:
+  code: "-1015"
+  msg: "불가능한 수행입니다."

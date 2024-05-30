@@ -61,3 +61,7 @@ notFoundDept:
 notFoundSystem:
   code: "-1014"
   msg: "not found this system name"
+
+notValidOperation:
+  code: "-1015"
+  msg: "not valid operation"

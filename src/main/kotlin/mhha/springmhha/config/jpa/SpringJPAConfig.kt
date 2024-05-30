@@ -44,7 +44,7 @@ class SpringJPAConfig {
         this.entityManagerFactory = springEntityManagerFactory().`object`
     }
     fun additionalProperties(): Properties = Properties().apply {
-        this.setProperty("hibernate.hbm2ddl.auto", "create-drop")
+        this.setProperty("hibernate.hbm2ddl.auto", "update")
         this.setProperty("hibernate.dialect", "org.hibernate.dialect.SQLServerDialect")
     }
 }

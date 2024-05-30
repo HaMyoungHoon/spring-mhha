@@ -1,15 +1,14 @@
 package mhha.springmhha.model.sqlSpring.angular
 
+import com.fasterxml.jackson.annotation.JsonBackReference
 import com.fasterxml.jackson.annotation.JsonManagedReference
-import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.persistence.*
 
-@Entity(name = "DocComponentsTab")
-data class DocComponentsTab(
+@Entity(name = "DocComponents")
+data class DocComponents(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "this_index")
-    @get:JsonProperty("this_index")
+    @Column
     var thisIndex: Long = 0,
     @Column(columnDefinition = "nvarchar(100)")
     var name: String = "",
@@ -19,15 +18,20 @@ data class DocComponentsTab(
     @JoinColumn
     @JsonManagedReference
     var docComponentsEmits: DocComponentsEmits? = null,
-    @OneToOne(fetch = FetchType.EAGER,cascade = [CascadeType.ALL])
+    @OneToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @JoinColumn
     @JsonManagedReference
-    var docComponentsProps: DocComponentsProps? = null
+    var docComponentsProps: DocComponentsProps? = null,
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn
+    @JsonBackReference
+    var docPage: DocPage? = null
 ) {
-  fun setChild() {
-    docComponentsEmits?.docComponentsTab = this
-    docComponentsProps?.docComponentsTab = this
+  fun setChild(): DocComponents {
+    docComponentsEmits?.docComponents = this
+    docComponentsProps?.docComponents = this
     docComponentsEmits?.setChild()
     docComponentsProps?.setChild()
+    return this
   }
 }

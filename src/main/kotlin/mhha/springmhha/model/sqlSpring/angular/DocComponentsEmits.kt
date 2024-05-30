@@ -2,31 +2,30 @@ package mhha.springmhha.model.sqlSpring.angular
 
 import com.fasterxml.jackson.annotation.JsonBackReference
 import com.fasterxml.jackson.annotation.JsonManagedReference
-import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.persistence.*
 
 @Entity(name = "DocComponentsEmits")
 data class DocComponentsEmits(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "this_index")
-    @get:JsonProperty("this_index")
+    @Column
     var thisIndex: Long = 0,
     @Column(columnDefinition = "nvarchar(300)")
     var description: String = "",
-    @OneToMany(fetch = FetchType.EAGER,cascade = [CascadeType.ALL])
+    @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @JoinColumn
     @JsonManagedReference
-    var docComponentsEmitsValue: MutableList<DocComponentsEmitsValue>? = null,
+    var docComponentsEmitsValues: MutableList<DocComponentsEmitsValues>? = null,
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn
     @JsonBackReference
-    var docComponentsTab: DocComponentsTab? = null
+    var docComponents: DocComponents? = null
 ) {
-    fun setChild() {
-        this.docComponentsEmitsValue?.forEach {
+    fun setChild(): DocComponentsEmits {
+        this.docComponentsEmitsValues?.forEach {
             it.docComponentsEmits = this
             it.setChild()
         }
+        return this
     }
 }
