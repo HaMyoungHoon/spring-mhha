@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-class AngularService {
+class AngularCommonService {
     @Autowired lateinit var docPage: DocPageRepository
     @Autowired lateinit var docComponents: DocComponentsRepository
     @Autowired lateinit var docComponentsProps: DCPRepository
@@ -24,6 +24,7 @@ class AngularService {
     @Autowired lateinit var docInterfacesTemplatesValue: DITVRepository
     @Autowired lateinit var docInterfacesTemplatesValueParameters: DITVPRepository
     @Autowired lateinit var newsRepository: NewsRepository
+    @Autowired lateinit var docMenuRepository: DocMenuItemRepository
 
     fun getPage() = docPage.findAll()
     fun getPageByIndex(index: Long) = docPage.findByThisIndex(index)
@@ -60,6 +61,16 @@ class AngularService {
 
     fun getNewsAll() = newsRepository.findAllByOrderByThisIndexDesc()
     fun getNewsItem() = newsRepository.findFirstByOrderByThisIndexDesc()
-    fun setNewsItem(data: NewsItem) = newsRepository.save(data)
-    fun setNewsItem(data: List<NewsItem>) = newsRepository.saveAll(data)
+    fun addNewsItem(data: NewsItem) = newsRepository.save(data)
+    fun addNewsItem(data: List<NewsItem>) = newsRepository.saveAll(data)
+
+    fun getDocMenuAll(isDesc: Boolean = false) = if (isDesc) {
+        docMenuRepository.findAllByOrderByThisIndexDesc()
+    } else {
+        docMenuRepository.findAllByOrderByThisIndexAsc()
+    }
+    fun getDocMenu(name: String) = docMenuRepository.findByName(name)
+    fun getDocMenu(name: List<String>) = docMenuRepository.findAllByNameIn(name)
+    fun addDocMenuItem(data: DocMenuItem) = docMenuRepository.save(data)
+    fun addDocMenuItem(data: List<DocMenuItem>) = docMenuRepository.saveAll(data)
 }
