@@ -6,6 +6,8 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface DocMenuItemRepository : JpaRepository<DocMenuItem, Long> {
+	fun findAllByDocMenuItemOrderByThisIndexAsc(data: DocMenuItem?): List<DocMenuItem>?
+	fun findAllByDocMenuItemOrderByThisIndexDesc(data: DocMenuItem?): List<DocMenuItem>?
 	fun findAllByOrderByThisIndexAsc(): List<DocMenuItem>?
 	fun findAllByOrderByThisIndexDesc(): List<DocMenuItem>?
 	fun findByName(name: String): DocMenuItem?

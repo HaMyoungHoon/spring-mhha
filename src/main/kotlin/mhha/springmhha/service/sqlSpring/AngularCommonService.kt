@@ -65,9 +65,9 @@ class AngularCommonService {
     fun addNewsItem(data: List<NewsItem>) = newsRepository.saveAll(data)
 
     fun getDocMenuAll(isDesc: Boolean = false) = if (isDesc) {
-        docMenuRepository.findAllByOrderByThisIndexDesc()
+        docMenuRepository.findAllByDocMenuItemOrderByThisIndexDesc(null)
     } else {
-        docMenuRepository.findAllByOrderByThisIndexAsc()
+        docMenuRepository.findAllByDocMenuItemOrderByThisIndexAsc(null)
     }
     fun getDocMenu(name: String) = docMenuRepository.findByName(name)
     fun getDocMenu(name: List<String>) = docMenuRepository.findAllByNameIn(name)

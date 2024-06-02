@@ -12,10 +12,6 @@ data class DocMenuItem(
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column
 	var thisIndex: Long = 0,
-	@Transient
-	var docMenuItemThisIndex: Long?,
-	@Transient
-	var childrenThisIndex: Long?,
 	@Column(columnDefinition = "nvarchar(100)")
 	var name: String,
 	@Column(columnDefinition = "nvarchar(100)")

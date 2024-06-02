@@ -2,6 +2,7 @@ package mhha.springmhha.controller.angular
 
 import io.swagger.v3.oas.annotations.tags.Tag
 import mhha.springmhha.advice.exception.NotValidOperationException
+import mhha.springmhha.advice.exception.ResourceNotExistException
 import mhha.springmhha.model.common.IRestResult
 import mhha.springmhha.model.sqlSpring.angular.doc.DocMenuItem
 import mhha.springmhha.model.sqlSpring.angular.news.NewsItem
@@ -37,7 +38,8 @@ class AngularCommonController {
 
 	@GetMapping(value = ["/get/doc_menu"])
 	fun getDocMenu(@RequestParam(required = false) isDesc: Boolean): IRestResult {
-		return responseService.getResult(angularCommonService.getDocMenuAll(isDesc))
+		val menu = angularCommonService.getDocMenuAll(isDesc)
+		return responseService.getResult(menu?.distinct())
 	}
 	@PostMapping(value = ["/post/doc_menu"])
 	fun postDocMenu(@RequestBody data: DocMenuItem): IRestResult {
@@ -71,6 +73,19 @@ class AngularCommonController {
 		}
 
 		temp.forEach { it.setChild() }
+
+		return responseService.getResult(angularCommonService.addDocMenuItem(data))
+	}
+	@PostMapping(value = ["/post/doc_menu/child"])
+	fun postDocMenuChild(@RequestParam name: String, @RequestBody data: DocMenuItem): IRestResult {
+		val parent = angularCommonService.getDocMenu(name) ?: throw ResourceNotExistException()
+		data.setChild()
+
+		if (parent.children == null) {
+			parent.children = mutableListOf()
+		}
+
+		parent.children?.add(data)
 
 		return responseService.getResult(angularCommonService.addDocMenuItem(data))
 	}
