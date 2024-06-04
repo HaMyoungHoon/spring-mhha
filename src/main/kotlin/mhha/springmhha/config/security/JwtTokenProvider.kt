@@ -2,9 +2,10 @@ package mhha.springmhha.config.security
 
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.security.Keys
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
+import mhha.springmhha.config.FConstants
+import mhha.springmhha.model.common.CustomUserModel
 import mhha.springmhha.model.sqlASP.UserData
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -16,6 +17,7 @@ import java.lang.Exception
 import java.security.Key
 import java.util.*
 import javax.crypto.SecretKey
+import javax.crypto.spec.SecretKeySpec
 
 @Component
 class JwtTokenProvider {
@@ -29,19 +31,19 @@ class JwtTokenProvider {
     }
     @PostConstruct
     protected fun init() {
-        secretKey = Base64.getEncoder().encodeToString(secretKey.toByteArray())
+//        secretKey = Base64.getEncoder().encodeToString(secretKey.toByteArray())
     }
 
-    fun getSignKey(): Key = Keys.hmacShaKeyFor(secretKey.toByteArray())
-    fun getSecretKey(): SecretKey = Keys.hmacShaKeyFor(secretKey.toByteArray())
+    fun getSignKey(): Key = SecretKeySpec(secretKey.toByteArray(), "HmacSHA256")
+    fun getSecretKey(): SecretKey = SecretKeySpec(secretKey.toByteArray(), "HmacSHA256")
     fun createToken(user: UserData, validTime: Long = tokenValidMS): String {
         val now = Date()
         return Jwts.builder().claims(Jwts.claims().subject(user.id).apply {
-            this.add("id", user.id)
-            this.add("name", user.name)
-            this.add("role", user.role)
-            this.add("status", user.status)
-        }.build()).issuedAt(now).expiration(Date(now.time + validTime)).signWith(getSignKey()) .compact()
+            this.add(FConstants.CLAIM_ID, user.id)
+            this.add(FConstants.CLAIM_NAME, user.name)
+            this.add(FConstants.CLAIM_ROLE, user.role.toString())
+            this.add(FConstants.CLAIM_STATUS, user.status)
+        }.build()).expiration(Date(now.time + validTime)).signWith(getSignKey()).compact()
     }
     fun getAllClaimsFromToken(token : String): Claims = Jwts.parser().verifyWith(getSecretKey()).build().parseSignedClaims(token).payload
     fun getAuthentication(token : String): Authentication {
@@ -49,6 +51,9 @@ class JwtTokenProvider {
         return UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)
     }
     fun getUserPk(token : String): String = getAllClaimsFromToken(token).subject
+    fun getUserData(token: String) = UserData().apply {
+        setData(getAuthentication(token).principal as CustomUserModel)
+    }
     fun resolveToken(req : HttpServletRequest): String? =
             req.getHeader(authToken)
     fun validateToken(token : String) = try {
