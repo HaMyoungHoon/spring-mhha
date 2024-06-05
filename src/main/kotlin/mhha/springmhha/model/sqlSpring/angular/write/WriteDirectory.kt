@@ -22,7 +22,7 @@ data class WriteDirectory(
 	@JsonBackReference
 	@JsonIgnore
 	var writeDirectory: WriteDirectory?,
-	@OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+	@OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
 	@JoinColumn
 	@JsonManagedReference
 	var writeFiles: MutableList<WriteFile>?,

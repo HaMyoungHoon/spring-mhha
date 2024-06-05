@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository
 interface WriteDirectoryRepository: JpaRepository<WriteDirectory, Long> {
 	fun findAllByWriteDirectoryOrderByThisIndexDesc(writeDirectory: WriteDirectory?): List<WriteDirectory>?
 	fun findAllByWriteDirectoryOrderByThisIndexAsc(writeDirectory: WriteDirectory?): List<WriteDirectory>?
+	fun findByDirNameAndWriteDirectory(name: String, writeDirectory: WriteDirectory?): WriteDirectory?
 }

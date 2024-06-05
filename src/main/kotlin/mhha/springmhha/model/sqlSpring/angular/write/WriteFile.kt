@@ -13,6 +13,8 @@ data class WriteFile(
 	var name: String,
 	@Column(columnDefinition = "text")
 	var content: String?,
+	@Column
+	var authIndex: Long = 0,
 	@ManyToOne(fetch = FetchType.LAZY, optional = true)
 	@JoinColumn
 	@JsonBackReference

@@ -32,14 +32,14 @@ class SpringJPAConfig {
     @Bean(name = [DATA_SOURCE])
     @ConfigurationProperties(prefix = "spring.datasource.spring-mssql")
     fun dataSource(): HikariDataSource = DataSourceBuilder.create().type(HikariDataSource::class.java).build()
-    @Bean
+    @Bean(name = [ENTITY_MANAGER])
     fun springEntityManagerFactory(): LocalContainerEntityManagerFactoryBean = LocalContainerEntityManagerFactoryBean().apply {
         this.dataSource = dataSource()
         this.setPackagesToScan("mhha.springmhha.model.sqlSpring")
         this.jpaVendorAdapter = HibernateJpaVendorAdapter()
         this.setJpaProperties(additionalProperties())
     }
-    @Bean
+    @Bean(name = [TRANSACTION_MANAGER])
     fun springTransactionManager(): PlatformTransactionManager = JpaTransactionManager().apply {
         this.entityManagerFactory = springEntityManagerFactory().`object`
     }

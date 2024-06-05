@@ -7,6 +7,7 @@ import mhha.springmhha.config.security.JwtTokenProvider
 import mhha.springmhha.model.common.IRestResult
 import mhha.springmhha.model.sqlSpring.angular.doc.DocMenuItem
 import mhha.springmhha.model.sqlSpring.angular.news.NewsItem
+import mhha.springmhha.model.sqlSpring.angular.write.WriteDirectory
 import mhha.springmhha.service.common.ResponseService
 import mhha.springmhha.service.sqlSpring.AngularCommonService
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,68 +37,36 @@ class AngularCommonController {
 	@PostMapping(value = ["/post/news"])
 	fun postNews(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
 	             @RequestBody data: NewsItem): IRestResult {
-		return responseService.getResult(angularCommonService.addNewsItem(data))
-	}
-
-	@GetMapping(value = ["/get/doc_menu"])
-	fun getDocMenu(@RequestParam(required = false) isDesc: Boolean): IRestResult {
-		val menu = angularCommonService.getDocMenuAll(isDesc)
-		return responseService.getResult(menu?.distinct())
-	}
-	@PostMapping(value = ["/post/doc_menu"])
-	fun postDocMenu(@RequestBody data: DocMenuItem): IRestResult {
-		throw NotValidOperationException()
-		if (data.name.isEmpty()) {
-			throw NotValidOperationException()
-		}
-		if (angularCommonService.getDocMenu(data.name) != null) {
-			throw NotValidOperationException()
-		}
-
-		data.setChild()
-
-		return responseService.getResult(angularCommonService.addDocMenuItem(data))
-	}
-	@PostMapping(value = ["/post/doc_menu/list"])
-	fun postDocMenuList(@RequestBody data: List<DocMenuItem>): IRestResult {
-		throw NotValidOperationException()
-		val temp = data.distinctBy { it.name }.filter { it.name.isNotEmpty() }.toMutableList()
-		if (temp.isEmpty()) {
-			throw NotValidOperationException()
-		}
-
-		val sameThing = angularCommonService.getDocMenu(temp.map { it.name })
-		if (sameThing != null) {
-			temp.removeAll { x ->
-				sameThing.any { it.name == x.name }
-			}
-		}
-
-		if (temp.isEmpty()) {
-			throw NotValidOperationException()
-		}
-
-		temp.forEach { it.setChild() }
-
-		return responseService.getResult(angularCommonService.addDocMenuItem(data))
-	}
-	@PostMapping(value = ["/post/doc_menu/child"])
-	fun postDocMenuChild(@RequestParam name: String, @RequestBody data: DocMenuItem): IRestResult {
-		throw NotValidOperationException()
-		val parent = angularCommonService.getDocMenu(name) ?: throw ResourceNotExistException()
-		data.setChild()
-
-		if (parent.children == null) {
-			parent.children = mutableListOf()
-		}
-
-		parent.children?.add(data)
-
-		return responseService.getResult(angularCommonService.addDocMenuItem(data))
+		return responseService.getResult(angularCommonService.addNewsItem(token, data))
 	}
 
 	@GetMapping(value = ["/get/write/directory"])
 	fun getDirectory(@RequestParam(required = false) isDesc: Boolean): IRestResult {
 		return responseService.getResult(angularCommonService.getWriteDirectoryAll(isDesc))
+	}
+	@GetMapping(value = ["/get/write/directory/name"])
+	fun getDirectoryName(@RequestParam name: String): IRestResult {
+		return responseService.getResult(angularCommonService.getWriteDirectoryName(name))
+	}
+	@GetMapping(value = ["/get/write/directory/name/files"])
+	fun getDirectoryNameWithFiles(@RequestParam name: String): IRestResult {
+		return responseService.getResult(angularCommonService.getWriteDirectoryNameWithFile(name))
+	}
+	@PostMapping(value = ["/post/write/directory"])
+	fun postDirectory(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
+	                  @RequestParam(required = false) parentName: String?,
+	                  @RequestBody data: WriteDirectory): IRestResult {
+		if (parentName != null) {
+			val parent = angularCommonService.getWriteDirectoryName(parentName) ?: throw ResourceNotExistException()
+			if (parent.children == null) {
+				parent.children = mutableListOf()
+			}
+			parent.children?.add(data)
+			parent.setChild()
+			return responseService.getResult(angularCommonService.addWriteDirectory(token, parent))
+		}
+
+		data.setChild()
+		return responseService.getResult(angularCommonService.addWriteDirectory(token, data))
 	}
 }

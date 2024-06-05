@@ -12,7 +12,7 @@ data class DocMenuItem(
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column
 	var thisIndex: Long = 0,
-	@Column(columnDefinition = "nvarchar(100)")
+	@Column(columnDefinition = "nvarchar(100)", unique = true)
 	var name: String,
 	@Column(columnDefinition = "nvarchar(100)")
 	var icon: String?,
@@ -23,14 +23,14 @@ data class DocMenuItem(
 	@Column(columnDefinition = "nvarchar(100)")
 	var badge: String?,
 	@OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
-	@JoinColumn
+	@JoinColumn(name = "children_thisIndex")
 	@JsonManagedReference
 	var children: MutableList<DocMenuItem>?,
 	@ManyToOne(fetch = FetchType.LAZY, optional = true)
-	@JoinColumn
+	@JoinColumn(name = "docMenuItem_thisIndex")
 	@JsonBackReference
 	@JsonIgnore
-	var docMenuItem: DocMenuItem?
+	var docMenuItem: DocMenuItem?,
 ) {
 	fun setChild(): DocMenuItem {
 		children?.forEach {
