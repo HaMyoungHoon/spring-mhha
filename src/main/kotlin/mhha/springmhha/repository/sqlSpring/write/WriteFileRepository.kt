@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository
 interface WriteFileRepository : JpaRepository<WriteFile, Long> {
 	fun findAllByWriteDirectory(writeDirectory: WriteDirectory): List<WriteFile>
 	fun findByName(name: String): WriteFile?
+	fun findAllByAuthIndexOrderByThisIndexDesc(authIndex: Long): List<WriteFile>?
 }

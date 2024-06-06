@@ -9,4 +9,5 @@ interface WriteDirectoryRepository: JpaRepository<WriteDirectory, Long> {
 	fun findAllByWriteDirectoryOrderByThisIndexDesc(writeDirectory: WriteDirectory?): List<WriteDirectory>?
 	fun findAllByWriteDirectoryOrderByThisIndexAsc(writeDirectory: WriteDirectory?): List<WriteDirectory>?
 	fun findByDirName(name: String): WriteDirectory?
+	fun findByThisIndex(thisIndex: Long): WriteDirectory?
 }

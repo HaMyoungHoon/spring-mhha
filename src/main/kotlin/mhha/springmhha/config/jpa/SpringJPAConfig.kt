@@ -46,5 +46,6 @@ class SpringJPAConfig {
     fun additionalProperties(): Properties = Properties().apply {
         this.setProperty("hibernate.hbm2ddl.auto", "update")
         this.setProperty("hibernate.dialect", "org.hibernate.dialect.SQLServerDialect")
+        this.setProperty("hibernate.show_sql", "true")
     }
 }

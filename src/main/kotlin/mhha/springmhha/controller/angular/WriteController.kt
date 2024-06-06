@@ -53,6 +53,10 @@ class WriteController {
 		val ret = angularCommonService.getWriteDirectoryNameWithFile(name)
 		return responseService.getResult(ret)
 	}
+	@GetMapping(value = ["/get/file/all"])
+	fun getWriteFileAll(@RequestHeader(value = JwtTokenProvider.authToken) token: String): IRestResult {
+		return responseService.getResult(angularCommonService.getWriteFileAll(token))
+	}
 	@GetMapping(value = ["/get/file/name"])
 	fun getWriteFileName(@RequestParam name: String): IRestResult {
 		return responseService.getResult(angularCommonService.getWriteFileName(name))

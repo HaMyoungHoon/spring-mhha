@@ -20,7 +20,9 @@ data class WriteFile(
 	@ManyToOne(fetch = FetchType.LAZY, optional = true)
 	@JoinColumn
 	@JsonBackReference
-	var writeDirectory: WriteDirectory?
+	var writeDirectory: WriteDirectory?,
+	@Column(insertable = false, updatable = false, name = "writeDirectory_thisIndex")
+	var writeDirectoryThisIndex: Long?
 ) {
 	fun setChild(): WriteFile {
 		return this

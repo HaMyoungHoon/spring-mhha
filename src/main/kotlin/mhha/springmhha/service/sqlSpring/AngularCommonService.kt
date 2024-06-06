@@ -70,8 +70,14 @@ class AngularCommonService {
         it
     }
     fun getWriteDirectoryNameWithFile(name: String) = writeDirectoryRepository.findByDirName(name)?.let {
-        it.writeFiles = writeFileRepository.findAllByWriteDirectory(it).toMutableList()
+        setWriteFiles(it)
         it
+    }
+    fun setWriteFiles(writeDirectory: WriteDirectory) {
+        writeDirectory.writeFiles = writeFileRepository.findAllByWriteDirectory(writeDirectory).toMutableList()
+        writeDirectory.children?.forEach {
+            setWriteFiles(it)
+        }
     }
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
     fun addWriteDirectory(token: String, data: WriteDirectory): WriteDirectory {
@@ -84,9 +90,15 @@ class AngularCommonService {
         return writeDirectoryRepository.save(data)
     }
 
-    fun getWriteFileName(name: String) = writeFileRepository.findByName(name)?.apply {
-        Hibernate.initialize(this.writeDirectory)
+    fun getWriteFileAll(token: String): List<WriteFile>? {
+        val user = jwtTokenProvider.getUserData(token)
+        if (UserRole.fromFlag(user.role).contains(UserRole.Admin)) {
+            return writeFileRepository.findAll()
+        }
+
+        return writeFileRepository.findAllByAuthIndexOrderByThisIndexDesc(user.thisIndex)
     }
+    fun getWriteFileName(name: String) = writeFileRepository.findByName(name)
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
     fun addWriteFile(token: String, data: WriteFile): WriteFile {
         isAdmin(token)
