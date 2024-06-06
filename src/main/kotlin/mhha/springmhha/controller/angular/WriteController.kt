@@ -72,7 +72,7 @@ class WriteController {
 	@PutMapping(value = ["/put/file"])
 	fun putWriteFile(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
 	                 @RequestParam(required = true) fileName: String,
-	                 @RequestParam content: String): IRestResult {
+	                 @RequestBody content: String): IRestResult {
 		val file = angularCommonService.getWriteFileName(fileName) ?: throw ResourceNotExistException()
 		file.content = content
 		return responseService.getResult(angularCommonService.editWriteFile(token, file))

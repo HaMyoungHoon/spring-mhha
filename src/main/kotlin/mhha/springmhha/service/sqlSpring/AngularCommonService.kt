@@ -90,6 +90,8 @@ class AngularCommonService {
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
     fun addWriteFile(token: String, data: WriteFile): WriteFile {
         isAdmin(token)
+        data.authIndex = jwtTokenProvider.getUserData(token).thisIndex
+        data.status = WriteFileStatus.None
         return writeFileRepository.save(data)
     }
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)

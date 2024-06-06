@@ -23,7 +23,7 @@ import javax.crypto.spec.SecretKeySpec
 class JwtTokenProvider {
     @Value(value = "\${spring.jwt.secret}")
     var secretKey: String = ""
-    var tokenValidMS = 1000L * 60 * 60 * 8
+    var tokenValidMS = 1000L * 60 * 60 * 24
     @Autowired
     lateinit var userDetailService: UserDetailsService
     companion object {
