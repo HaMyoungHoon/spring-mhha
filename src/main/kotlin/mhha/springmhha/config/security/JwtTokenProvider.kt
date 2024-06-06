@@ -27,7 +27,7 @@ class JwtTokenProvider {
     @Autowired
     lateinit var userDetailService: UserDetailsService
     companion object {
-        const val authToken: String = "token"
+        const val authToken: String = "auth_token"
     }
     @PostConstruct
     protected fun init() {
