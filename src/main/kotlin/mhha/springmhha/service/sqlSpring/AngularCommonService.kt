@@ -55,20 +55,53 @@ class AngularCommonService {
     }
 
     fun getWriteDirectoryAll(isDesc: Boolean = false) = if (isDesc) {
-        writeDirectoryRepository.findAllByWriteDirectoryOrderByThisIndexDesc(null)
+        writeDirectoryRepository.findAllByWriteDirectoryOrderByThisIndexDesc(null)?.let { x ->
+            x.forEach { y -> y.initFile() }
+            x
+        }
     } else {
-        writeDirectoryRepository.findAllByWriteDirectoryOrderByThisIndexAsc(null)
+        writeDirectoryRepository.findAllByWriteDirectoryOrderByThisIndexAsc(null)?.let { x ->
+            x.forEach { y -> y.initFile() }
+            x
+        }
     }
-    fun getWriteDirectoryName(name: String) = writeDirectoryRepository.findByDirNameAndWriteDirectory(name, null)
-    fun getWriteDirectoryNameWithFile(name: String): WriteDirectory? {
-        val ret = writeDirectoryRepository.findByDirNameAndWriteDirectory(name, null)
-        ret?.let { Hibernate.initialize(it.writeFiles) }
-        return ret
+    fun getWriteDirectoryName(name: String) = writeDirectoryRepository.findByDirName(name)?.let {
+        it.initFile()
+        it
+    }
+    fun getWriteDirectoryNameWithFile(name: String) = writeDirectoryRepository.findByDirName(name)?.let {
+        it.writeFiles = writeFileRepository.findAllByWriteDirectory(it).toMutableList()
+        it
     }
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
     fun addWriteDirectory(token: String, data: WriteDirectory): WriteDirectory {
         isAdmin(token)
         return writeDirectoryRepository.save(data)
+    }
+    @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
+    fun editWriteDirectory(token: String, data: WriteDirectory): WriteDirectory {
+        isAdmin(token)
+        return writeDirectoryRepository.save(data)
+    }
+
+    fun getWriteFileName(name: String) = writeFileRepository.findByName(name)?.apply {
+        Hibernate.initialize(this.writeDirectory)
+    }
+    @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
+    fun addWriteFile(token: String, data: WriteFile): WriteFile {
+        isAdmin(token)
+        return writeFileRepository.save(data)
+    }
+    @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
+    fun editWriteFile(token: String, data: WriteFile): WriteFile {
+        if (!isAdmin(token, false)) {
+            val user = jwtTokenProvider.getUserData(token)
+            if (user.thisIndex != data.authIndex) {
+                throw AuthenticationEntryPointException()
+            }
+        }
+
+        return writeFileRepository.save(data)
     }
 
     fun isAdmin(token: String, notAdminThrow: Boolean = true): Boolean {

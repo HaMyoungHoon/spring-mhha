@@ -13,6 +13,8 @@ data class WriteDirectory(
 	var thisIndex: Long = 0,
 	@Column(columnDefinition = "nvarchar(300)")
 	var dirName: String = "",
+	@Column
+	var status: WriteDirectoryStatus = WriteDirectoryStatus.None,
 	@OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
 	@JoinColumn
 	@JsonManagedReference
@@ -25,7 +27,7 @@ data class WriteDirectory(
 	@OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
 	@JoinColumn
 	@JsonManagedReference
-	var writeFiles: MutableList<WriteFile>?,
+	var writeFiles: MutableList<WriteFile>?
 ) {
 	fun setChild(): WriteDirectory {
 		children?.forEach {
@@ -37,5 +39,11 @@ data class WriteDirectory(
 			it.setChild()
 		}
 		return this
+	}
+	fun initFile() {
+		writeFiles = mutableListOf()
+		children?.forEach {
+			it.initFile()
+		}
 	}
 }

@@ -9,12 +9,14 @@ data class WriteFile(
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column
 	var thisIndex: Long = 0,
-	@Column(columnDefinition = "nvarchar(300)")
-	var name: String,
+	@Column(unique = true, nullable = false, columnDefinition = "nvarchar(300)")
+	var name: String = "",
 	@Column(columnDefinition = "text")
 	var content: String?,
 	@Column
 	var authIndex: Long = 0,
+	@Column
+	var status: WriteFileStatus = WriteFileStatus.None,
 	@ManyToOne(fetch = FetchType.LAZY, optional = true)
 	@JoinColumn
 	@JsonBackReference

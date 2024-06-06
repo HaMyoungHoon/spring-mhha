@@ -8,11 +8,13 @@ import mhha.springmhha.model.common.IRestResult
 import mhha.springmhha.model.sqlSpring.angular.doc.DocMenuItem
 import mhha.springmhha.model.sqlSpring.angular.news.NewsItem
 import mhha.springmhha.model.sqlSpring.angular.write.WriteDirectory
+import mhha.springmhha.model.sqlSpring.angular.write.WriteFile
 import mhha.springmhha.service.common.ResponseService
 import mhha.springmhha.service.sqlSpring.AngularCommonService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
@@ -48,19 +50,15 @@ class AngularCommonController {
 	fun getDirectoryName(@RequestParam name: String): IRestResult {
 		return responseService.getResult(angularCommonService.getWriteDirectoryName(name))
 	}
-	@GetMapping(value = ["/get/write/directory/name/files"])
-	fun getDirectoryNameWithFiles(@RequestParam name: String): IRestResult {
-		return responseService.getResult(angularCommonService.getWriteDirectoryNameWithFile(name))
-	}
 	@PostMapping(value = ["/post/write/directory"])
 	fun postDirectory(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
 	                  @RequestParam(required = false) parentName: String?,
 	                  @RequestBody data: WriteDirectory): IRestResult {
+		if (data.dirName.isEmpty()) {
+			throw NotValidOperationException()
+		}
 		if (parentName != null) {
 			val parent = angularCommonService.getWriteDirectoryName(parentName) ?: throw ResourceNotExistException()
-			if (parent.children == null) {
-				parent.children = mutableListOf()
-			}
 			parent.children?.add(data)
 			parent.setChild()
 			return responseService.getResult(angularCommonService.addWriteDirectory(token, parent))
@@ -68,5 +66,43 @@ class AngularCommonController {
 
 		data.setChild()
 		return responseService.getResult(angularCommonService.addWriteDirectory(token, data))
+	}
+
+	@GetMapping(value = ["/get/write/directory/name/files"])
+	fun getDirectoryNameWithFiles(@RequestParam name: String): IRestResult {
+		val ret = angularCommonService.getWriteDirectoryNameWithFile(name)
+		return responseService.getResult(ret)
+	}
+	@GetMapping(value = ["/get/write/file/name"])
+	fun getWriteFileName(@RequestParam name: String): IRestResult {
+		return responseService.getResult(angularCommonService.getWriteFileName(name))
+	}
+	@PostMapping(value = ["/post/write/file"])
+	fun postWriteFile(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
+										@RequestParam(required = true) dirName: String,
+										@RequestBody data: WriteFile): IRestResult {
+		if (data.name.isEmpty()) {
+			throw NotValidOperationException()
+		}
+		val dir = angularCommonService.getWriteDirectoryName(dirName) ?: throw ResourceNotExistException()
+		data.writeDirectory = dir
+		return responseService.getResult(angularCommonService.addWriteFile(token, data))
+	}
+	@PutMapping(value = ["/put/write/file"])
+	fun putWriteFile(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
+									 @RequestParam(required = true) fileName: String,
+									 @RequestParam content: String): IRestResult {
+		val file = angularCommonService.getWriteFileName(fileName) ?: throw ResourceNotExistException()
+		file.content = content
+		return responseService.getResult(angularCommonService.editWriteFile(token, file))
+	}
+	@PutMapping(value = ["/put/write/file/move"])
+	fun putWriteFileMove(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
+											 @RequestParam(required = true) fileName: String,
+											 @RequestParam(required = true) dirName: String): IRestResult {
+		val file = angularCommonService.getWriteFileName(fileName) ?: throw ResourceNotExistException()
+		val dir = angularCommonService.getWriteDirectoryName(dirName) ?: throw ResourceNotExistException()
+		file.writeDirectory = dir
+		return responseService.getResult(angularCommonService.editWriteFile(token, file))
 	}
 }
