@@ -3,6 +3,7 @@ package mhha.springmhha.controller.angular
 import io.swagger.v3.oas.annotations.tags.Tag
 import mhha.springmhha.advice.exception.NotValidOperationException
 import mhha.springmhha.advice.exception.ResourceNotExistException
+import mhha.springmhha.config.FConstants
 import mhha.springmhha.config.security.JwtTokenProvider
 import mhha.springmhha.model.common.IRestResult
 import mhha.springmhha.model.sqlSpring.angular.doc.*
@@ -11,10 +12,10 @@ import mhha.springmhha.service.sqlSpring.AngularCommonService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 
-@Tag(name = "DocMenuController")
+@Tag(name = "AngularDocMenuController")
 @RestController
 @RequestMapping(value = ["/angular/doc"])
-class DocMenuController {
+class AngularDocMenuController {
     @Autowired lateinit var responseService: ResponseService
     @Autowired lateinit var angularCommonService: AngularCommonService
 
@@ -24,6 +25,7 @@ class DocMenuController {
         return responseService.getResult(menu?.distinct())
     }
     @PostMapping(value = ["/post/menu"])
+    @CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
     fun postDocMenu(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
                     @RequestBody data: DocMenuItem): IRestResult {
         if (data.name.isEmpty()) {
@@ -38,6 +40,7 @@ class DocMenuController {
         return responseService.getResult(angularCommonService.addDocMenuItem(token, data))
     }
     @PostMapping(value = ["/post/menu/list"])
+    @CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
     fun postDocMenuList(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
                         @RequestBody data: List<DocMenuItem>): IRestResult {
         val temp = data.distinctBy { it.name }.filter { it.name.isNotEmpty() }.toMutableList()
@@ -61,6 +64,7 @@ class DocMenuController {
         return responseService.getResult(angularCommonService.addDocMenuItem(token, data))
     }
     @PostMapping(value = ["/post/menu/child"])
+    @CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
     fun postDocMenuChild(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
                          @RequestParam name: String, @RequestBody data: DocMenuItem): IRestResult {
         if (data.name.isEmpty()) {
