@@ -1,12 +1,17 @@
 package mhha.springmhha.service.sqlSpring
 
 import mhha.springmhha.advice.exception.AuthenticationEntryPointException
+import mhha.springmhha.advice.exception.NotValidOperationException
 import mhha.springmhha.config.jpa.SpringJPAConfig
 import mhha.springmhha.config.security.JwtTokenProvider
 import mhha.springmhha.model.sqlASP.UserRole
 import mhha.springmhha.model.sqlSpring.angular.doc.*
 import mhha.springmhha.model.sqlSpring.angular.news.*
 import mhha.springmhha.model.sqlSpring.angular.write.*
+import mhha.springmhha.model.sqlSpring.common.IPBlockModel
+import mhha.springmhha.model.sqlSpring.common.LogModel
+import mhha.springmhha.repository.sqlSpring.common.IPBlockRepository
+import mhha.springmhha.repository.sqlSpring.common.LogRepository
 import mhha.springmhha.repository.sqlSpring.doc.*
 import mhha.springmhha.repository.sqlSpring.news.*
 import mhha.springmhha.repository.sqlSpring.write.*
@@ -14,15 +19,27 @@ import org.hibernate.Hibernate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.sql.Timestamp
+import kotlin.math.log
 
 @Service
 class AngularCommonService {
+    @Autowired lateinit var logRepository: LogRepository
     @Autowired lateinit var newsRepository: NewsRepository
     @Autowired lateinit var docMenuRepository: DocMenuItemRepository
     @Autowired lateinit var writeDirectoryRepository: WriteDirectoryRepository
     @Autowired lateinit var writeFileRepository: WriteFileRepository
     @Autowired lateinit var jwtTokenProvider: JwtTokenProvider
 
+    fun addLog(logModel: LogModel): LogModel {
+        val minusTime = if (logModel.requestUri.startsWith("/v1/video/get/")) 3 * 60 * 1000
+        else 1 * 30 * 1000
+        val model = logRepository.findByLocalAddrAndRequestUriAndDateTimeGreaterThan(logModel.localAddr, logModel.requestUri, Timestamp(logModel.dateTime.time - minusTime))
+        if (model != null) {
+            return model
+        }
+        return logRepository.save(logModel)
+    }
     fun getNewsAll() = newsRepository.findAllByOrderByThisIndexDesc()
     fun getNewsItem() = newsRepository.findFirstByOrderByThisIndexDesc()
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
