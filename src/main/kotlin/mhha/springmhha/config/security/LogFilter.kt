@@ -7,7 +7,6 @@ import mhha.springmhha.model.sqlSpring.common.LogModel
 import mhha.springmhha.service.sqlSpring.AngularCommonService
 import org.springframework.web.filter.OncePerRequestFilter
 import org.springframework.web.util.ContentCachingRequestWrapper
-import org.springframework.web.util.ContentCachingResponseWrapper
 
 class LogFilter(private var angularCommonService: AngularCommonService): OncePerRequestFilter() {
 	override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {

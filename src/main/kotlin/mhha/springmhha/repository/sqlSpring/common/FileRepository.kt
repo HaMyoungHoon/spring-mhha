@@ -2,7 +2,6 @@ package mhha.springmhha.repository.sqlSpring.common
 
 import mhha.springmhha.model.common.Storage
 import mhha.springmhha.model.sqlSpring.common.FileModel
-import org.hibernate.query.NativeQuery
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository

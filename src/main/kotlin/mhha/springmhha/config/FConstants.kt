@@ -21,7 +21,6 @@ object FConstants {
 	const val CHUNK_SIZE = 314700L
 	const val BYTE_RANGE = 1024
 
-	const val HEADER_HOST = "host"
 	const val HEADER_FORWARDED_FOR = "X-Forwarded-For"
 	const val HEADER_PROXY_CLIENT_IP = "Proxy-Client-IP"
 	const val HEADER_WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP"

@@ -1,26 +1,21 @@
 package mhha.springmhha.service.sqlSpring
 
 import mhha.springmhha.advice.exception.AuthenticationEntryPointException
-import mhha.springmhha.advice.exception.NotValidOperationException
 import mhha.springmhha.config.jpa.SpringJPAConfig
 import mhha.springmhha.config.security.JwtTokenProvider
 import mhha.springmhha.model.sqlASP.UserRole
 import mhha.springmhha.model.sqlSpring.angular.doc.*
 import mhha.springmhha.model.sqlSpring.angular.news.*
 import mhha.springmhha.model.sqlSpring.angular.write.*
-import mhha.springmhha.model.sqlSpring.common.IPBlockModel
 import mhha.springmhha.model.sqlSpring.common.LogModel
-import mhha.springmhha.repository.sqlSpring.common.IPBlockRepository
 import mhha.springmhha.repository.sqlSpring.common.LogRepository
 import mhha.springmhha.repository.sqlSpring.doc.*
 import mhha.springmhha.repository.sqlSpring.news.*
 import mhha.springmhha.repository.sqlSpring.write.*
-import org.hibernate.Hibernate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.sql.Timestamp
-import kotlin.math.log
 
 @Service
 class AngularCommonService {
