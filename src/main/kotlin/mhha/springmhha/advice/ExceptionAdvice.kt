@@ -1,5 +1,6 @@
 package mhha.springmhha.advice
 
+import jakarta.servlet.AsyncContext
 import jakarta.servlet.http.HttpServletRequest
 import mhha.springmhha.advice.exception.*
 import mhha.springmhha.service.common.ResponseService
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException
 import kotlin.Exception
 
 @RestControllerAdvice
@@ -18,10 +20,10 @@ class ExceptionAdvice {
   lateinit var responseService: ResponseService
   @Autowired
   lateinit var messageSource: MessageSource
-  @ExceptionHandler(Exception::class)
-  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  protected fun defaultException(req: HttpServletRequest, exception: Exception) =
-    responseService.getFailResult(getMessage("unKnown.code").toInt(), exception.message.toString())
+//  @ExceptionHandler(Exception::class)
+//  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//  protected fun defaultException(req: HttpServletRequest, exception: Exception) =
+//    responseService.getFailResult(getMessage("unKnown.code").toInt(), exception.message.toString())
   @ExceptionHandler(UserNotFoundException::class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   protected fun userNotFoundException(request: HttpServletRequest, exception: UserNotFoundException) =
@@ -78,6 +80,10 @@ class ExceptionAdvice {
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   protected fun notValidOperationException(request : HttpServletRequest, exception : NotValidOperationException) =
     responseService.getFailResult(getMessage("notValidOperation.code").toInt(), getMessage("notValidOperation.msg"))
+  @ExceptionHandler(AsyncRequestTimeoutException::class)
+  @ResponseStatus(HttpStatus.OK)
+  protected fun asyncRequestTimeoutException(request: HttpServletRequest, exception: AsyncRequestTimeoutException): AsyncContext =
+    request.startAsync()
   protected fun getMessage(code: String) = getMessage(code, null)
   protected fun getMessage(code: String, args: Array<Any>?) = messageSource.getMessage(code, args, LocaleContextHolder.getLocale())
 }
