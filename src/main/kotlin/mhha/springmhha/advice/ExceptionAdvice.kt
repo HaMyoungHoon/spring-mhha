@@ -15,14 +15,12 @@ import org.springframework.web.context.request.async.AsyncRequestTimeoutExceptio
 
 @RestControllerAdvice
 class ExceptionAdvice {
-  @Autowired
-  lateinit var responseService: ResponseService
-  @Autowired
-  lateinit var messageSource: MessageSource
-//  @ExceptionHandler(Exception::class)
-//  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-//  protected fun defaultException(req: HttpServletRequest, exception: Exception) =
-//    responseService.getFailResult(getMessage("unKnown.code").toInt(), exception.message.toString())
+  @Autowired lateinit var responseService: ResponseService
+  @Autowired lateinit var messageSource: MessageSource
+  @ExceptionHandler(Exception::class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  protected fun defaultException(req: HttpServletRequest, exception: Exception) =
+    responseService.getFailResult(getMessage("unKnown.code").toInt(), exception.message.toString())
   @ExceptionHandler(UserNotFoundException::class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   protected fun userNotFoundException(request: HttpServletRequest, exception: UserNotFoundException) =
@@ -77,12 +75,17 @@ class ExceptionAdvice {
     responseService.getFailResult(getMessage("notFoundSystem.code").toInt(), "${getMessage("notFoundSystem.msg")} : ${exception.message.toString()}")
   @ExceptionHandler(NotValidOperationException::class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  protected fun notValidOperationException(request : HttpServletRequest, exception : NotValidOperationException) =
+  protected fun notValidOperationException(request : HttpServletRequest, exception: NotValidOperationException) =
     responseService.getFailResult(getMessage("notValidOperation.code").toInt(), getMessage("notValidOperation.msg"))
+  @ExceptionHandler(ResourceAlreadyExistException::class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  protected fun resourceAlreadyExistException(request: HttpServletRequest, exception: ResourceAlreadyExistException) =
+    responseService.getFailResult(getMessage("resourceAlreadyExistException.code").toInt(), getMessage("resourceAlreadyExistException.msg"))
   @ExceptionHandler(AsyncRequestTimeoutException::class)
   @ResponseStatus(HttpStatus.OK)
   protected fun asyncRequestTimeoutException(request: HttpServletRequest, exception: AsyncRequestTimeoutException): AsyncContext =
     request.startAsync()
+
   protected fun getMessage(code: String) = getMessage(code, null)
   protected fun getMessage(code: String, args: Array<Any>?) = messageSource.getMessage(code, args, LocaleContextHolder.getLocale())
 }

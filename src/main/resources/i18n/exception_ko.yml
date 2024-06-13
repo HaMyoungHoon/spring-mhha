@@ -65,3 +65,7 @@ notFoundSystem:
 notValidOperation:
   code: "-1015"
   msg: "불가능한 수행입니다."
+
+resourceAlreadyExistException:
+  code: "-1016"
+  msg: "리소스가 이미 존재합니다."

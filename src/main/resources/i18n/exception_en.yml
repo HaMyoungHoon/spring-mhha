@@ -65,3 +65,7 @@ notFoundSystem:
 notValidOperation:
   code: "-1015"
   msg: "not valid operation"
+
+resourceAlreadyExistException:
+  code: "-1016"
+  msg: "resource already exist"
