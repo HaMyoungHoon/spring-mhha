@@ -8,8 +8,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class ConnectorConfig {
-    @Value(value = "\${spring.http-port}")
-    var httpPort: Int = 12581
+    @Value(value = "\${spring.http-port}") var httpPort: Int = 12581
     @Bean fun servletContainer() = TomcatServletWebServerFactory().apply {
         this.addAdditionalTomcatConnectors(createSslConnector())
     }

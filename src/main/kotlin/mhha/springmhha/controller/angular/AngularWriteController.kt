@@ -2,6 +2,7 @@ package mhha.springmhha.controller.angular
 
 import io.swagger.v3.oas.annotations.tags.Tag
 import mhha.springmhha.advice.exception.NotValidOperationException
+import mhha.springmhha.advice.exception.ResourceAlreadyExistException
 import mhha.springmhha.advice.exception.ResourceNotExistException
 import mhha.springmhha.config.FConstants
 import mhha.springmhha.config.security.JwtTokenProvider
@@ -17,27 +18,25 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping(value = ["/angular/write"])
 class AngularWriteController {
-	@Autowired
-	lateinit var responseService: ResponseService
-	@Autowired
-	lateinit var angularCommonService: AngularCommonService
+	@Autowired lateinit var responseService: ResponseService
+	@Autowired lateinit var angularCommonService: AngularCommonService
 
 	@GetMapping(value = ["/get/directory"])
-	fun getDirectory(@RequestParam(required = false) isDesc: Boolean): IRestResult {
-		return responseService.getResult(angularCommonService.getWriteDirectoryAll(isDesc))
-	}
+	fun getDirectory(@RequestParam(required = false) isDesc: Boolean) =
+		responseService.getResult(angularCommonService.getWriteDirectoryAll(isDesc))
 	@GetMapping(value = ["/get/directory/name"])
-	fun getDirectoryName(@RequestParam name: String): IRestResult {
-		return responseService.getResult(angularCommonService.getWriteDirectoryName(name))
-	}
+	fun getDirectoryName(@RequestParam name: String) =
+		responseService.getResult(angularCommonService.getWriteDirectoryName(name))
 	@PostMapping(value = ["/post/directory"])
 	@CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
 	fun postDirectory(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
 	                  @RequestParam(required = false) parentName: String?,
-	                  @RequestBody data: WriteDirectory
-	): IRestResult {
+	                  @RequestBody data: WriteDirectory): IRestResult {
 		if (data.dirName.isEmpty()) {
 			throw NotValidOperationException()
+		}
+		if (angularCommonService.getWriteDirectoryName(data.dirName) != null) {
+			throw ResourceAlreadyExistException()
 		}
 		if (parentName != null) {
 			val parent = angularCommonService.getWriteDirectoryName(parentName) ?: throw ResourceNotExistException()
@@ -51,24 +50,19 @@ class AngularWriteController {
 	}
 
 	@GetMapping(value = ["/get/directory/name/files"])
-	fun getDirectoryNameWithFiles(@RequestParam name: String): IRestResult {
-		val ret = angularCommonService.getWriteDirectoryNameWithFile(name)
-		return responseService.getResult(ret)
-	}
+	fun getDirectoryNameWithFiles(@RequestParam name: String) =
+		responseService.getResult(angularCommonService.getWriteDirectoryNameWithFile(name))
 	@GetMapping(value = ["/get/file/all"])
-	fun getWriteFileAll(@RequestHeader(value = JwtTokenProvider.authToken) token: String): IRestResult {
-		return responseService.getResult(angularCommonService.getWriteFileAll(token))
-	}
+	fun getWriteFileAll(@RequestHeader(value = JwtTokenProvider.authToken) token: String) =
+		responseService.getResult(angularCommonService.getWriteFileAll(token))
 	@GetMapping(value = ["/get/file/name"])
-	fun getWriteFileName(@RequestParam name: String): IRestResult {
-		return responseService.getResult(angularCommonService.getWriteFileName(name))
-	}
+	fun getWriteFileName(@RequestParam name: String) =
+		responseService.getResult(angularCommonService.getWriteFileName(name))
 	@PostMapping(value = ["/post/file"])
 	@CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
 	fun postWriteFile(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
 	                  @RequestParam(required = true) dirName: String,
-	                  @RequestBody data: WriteFile
-	): IRestResult {
+	                  @RequestBody data: WriteFile): IRestResult {
 		if (data.name.isEmpty()) {
 			throw NotValidOperationException()
 		}

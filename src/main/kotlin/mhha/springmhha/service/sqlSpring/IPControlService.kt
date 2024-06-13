@@ -48,15 +48,11 @@ class IPControlService {
 		return ipBlockRepository.save(model)
 	}
 
-	fun isAdmin(token: String, notAdminThrow: Boolean = true): Boolean {
-		val user = jwtTokenProvider.getUserData(token)
-		if (UserRole.fromFlag(user.role).contains(UserRole.Admin)) {
-			return true
-		}
-		if (notAdminThrow) {
-			throw AuthenticationEntryPointException()
-		}
-
-		return false
-	}
+	fun isAdmin(token: String?, notAdminThrow: Boolean = true): Boolean =
+		token?.let { x ->
+			val user = jwtTokenProvider.getUserData(x)
+			if (UserRole.fromFlag(user.role).contains(UserRole.Admin)) true
+			else if (notAdminThrow) throw AuthenticationEntryPointException()
+			else false
+		} ?: if (notAdminThrow) throw AuthenticationEntryPointException() else false
 }

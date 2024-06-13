@@ -10,8 +10,7 @@ import java.util.Optional
 
 @Service
 class CustomUserDetailService: UserDetailsService {
-    @Autowired
-    lateinit var userDataRepository: UserDataRepository
+    @Autowired lateinit var userDataRepository: UserDataRepository
     override fun loadUserByUsername(id: String): CustomUserModel =
             Optional.ofNullable(userDataRepository.findById(id)).orElseThrow { UserNotFoundException() }.apply {
             }.convertUserDetail()
