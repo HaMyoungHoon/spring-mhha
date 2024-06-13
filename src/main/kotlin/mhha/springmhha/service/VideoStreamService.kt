@@ -1,47 +1,148 @@
 package mhha.springmhha.service
 
-import mhha.springmhha.advice.exception.FileDownloadException
-import mhha.springmhha.advice.exception.ResourceNotExistException
+import mhha.springmhha.advice.exception.AuthenticationEntryPointException
 import mhha.springmhha.config.FConstants
-import mhha.springmhha.model.common.Storage
-import mhha.springmhha.model.sqlSpring.common.FileModel
-import mhha.springmhha.repository.sqlSpring.common.FileRepository
+import mhha.springmhha.config.FExtensions
+import mhha.springmhha.config.jpa.SpringJPAConfig
+import mhha.springmhha.config.security.JwtTokenProvider
+import mhha.springmhha.model.sqlASP.UserRole
+import mhha.springmhha.model.sqlSpring.common.*
+import mhha.springmhha.repository.sqlSpring.common.VideoCategoryRepository
+import mhha.springmhha.repository.sqlSpring.common.VideoRepository
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.Resource
 import org.springframework.core.io.UrlResource
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.async.WebAsyncTask
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 import java.io.*
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.*
 import java.util.concurrent.Callable
 
 @Service
 class VideoStreamService {
-	@Value(value = "\${file.defDir}")
-	var defDirPath: String = ""
-	@Value(value = "\${file.videoDir}")
-	var videoDirPath: String = ""
+	@Autowired lateinit var videoCategoryRepository: VideoCategoryRepository
+	@Autowired lateinit var videoRepository: VideoRepository
+	@Autowired lateinit var jwtTokenProvider: JwtTokenProvider
 
-	@Autowired lateinit var fileRepository: FileRepository
-	fun getVideoByNameStream(fileName: String) = getVideoStreamingBodyAsync(fileRepository.findByFileName(fileName) ?: throw FileNotFoundException())
-	fun getVideoByIndexStream(index: Long) = getVideoStreamingBodyAsync(fileRepository.findByThisIndex(index) ?: throw FileNotFoundException())
-	fun getVideoByNameResource(fileName: String) = getVideoResourceBodyAsync(fileRepository.findByFileName(fileName) ?: throw FileNotFoundException())
-	fun getVideoByIndexResource(index: Long) = getVideoResourceBodyAsync(fileRepository.findByThisIndex(index) ?: throw FileNotFoundException())
-	fun getVideoByIndexByte(index: Long, range: String?) = getVideoByteArray(fileRepository.findByThisIndex(index) ?: throw FileNotFoundException(), range)
-	fun getVideoByNameByte(name: String, range: String?) = getVideoByteArray(fileRepository.findByFileName(name) ?: throw FileNotFoundException(), range)
-	fun getVideoStreamingBodyAsync(file: FileModel) = WebAsyncTask(Callable { getVideoStreamingBody(file) })
-	fun getVideoResourceBodyAsync(file: FileModel) = WebAsyncTask(Callable { getVideoResourceBody(file) })
+	fun getVideoCategory(dirName: String) = videoCategoryRepository.findByDirName(dirName)?.apply { init() }
+	fun getVideoCategoryWithVideo(dirName: String) = videoCategoryRepository.findByDirName(dirName)?.apply { getVideoList(this) }
+	fun getVideoCategoryList(token: String?, isDesc: Boolean = true) =
+		if (isAdmin(token, false)) getVideoCategoryList(isDesc)
+		else getVideoCategoryListByStateOK(isDesc)
+	private fun getVideoCategoryList(isDesc: Boolean = true) =
+		if (isDesc) videoCategoryRepository.findAllByVideoCategoryOrderByThisIndexDesc(null)?.onEach { x -> x.init() }
+		else videoCategoryRepository.findAllByVideoCategoryOrderByThisIndexAsc(null)?.onEach { x -> x.init() }
+	private fun getVideoCategoryListByStateOK(isDesc: Boolean) =
+		if (isDesc) videoCategoryRepository.findAllByVideoCategoryAndVideoCategoryStateNotOrderByThisIndexDesc(null, VideoCategoryState.DELETE)?.onEach { x -> x.init() }
+		else videoCategoryRepository.findAllByVideoCategoryAndVideoCategoryStateNotOrderByThisIndexAsc(null, VideoCategoryState.DELETE)?.onEach { x -> x.init() }
+	fun getVideoCategoryWithChild(token: String?, name: String, isDesc: Boolean = true) =
+		if (isAdmin(token, false)) videoCategoryRepository.findByDirName(name)?.apply { setVideoCategoryVideo(token, this, isDesc) }
+		else videoCategoryRepository.findByVideoCategoryStateAndDirName(VideoCategoryState.OK, name)?.apply { setVideoCategoryVideo(token, this, isDesc) }
+	private fun setVideoCategoryVideo(token: String?, videoCategoryModel: VideoCategoryModel, isDesc: Boolean = true) {
+		videoCategoryModel.video = getVideoList(token, videoCategoryModel, isDesc)?.toMutableList()
+		videoCategoryModel.children?.onEach { setVideoCategoryVideo(token, videoCategoryModel, isDesc) }
+	}
+	private fun getVideoList(token: String?, videoCategoryModel: VideoCategoryModel, isDesc: Boolean = false) =
+		if (isAdmin(token, false)) getVideoList(videoCategoryModel, isDesc)
+		else getVideoListByStateOK(videoCategoryModel, isDesc)
+	private fun getVideoList(videoCategoryModel: VideoCategoryModel, isDesc: Boolean = false) =
+		if (isDesc) videoRepository.findAllByVideoCategoryOrderByFileDateDesc(videoCategoryModel)
+		else videoRepository.findAllByVideoCategoryOrderByFileDateAsc(videoCategoryModel)
+	private fun getVideoListByStateOK(videoCategoryModel: VideoCategoryModel, isDesc: Boolean = false) =
+		if (isDesc) videoRepository.findAllByFileStateAndVideoCategoryOrderByFileDateDesc(FileState.OK, videoCategoryModel)
+		else videoRepository.findAllByFileStateAndVideoCategoryOrderByFileDateAsc(FileState.OK, videoCategoryModel)
 
-	private fun getVideoStreamingBody(file: FileModel): ResponseEntity<StreamingResponseBody> {
-		val filePath = getFilePath(file)
-		val fileSize = getFileSize(filePath)
+	fun getVideoByFileNameAndSubPath(fileName: String, subPath: String?) = videoRepository.findByFileNameAndSubPath(fileName, subPath)
+	fun getVideoList(token: String?, isDesc: Boolean = false) =
+		if (isAdmin(token, false)) getVideoList(isDesc)
+		else getVideoListByStateOK(isDesc)
+	private fun getVideoList(isDesc: Boolean = false) =
+		if (isDesc) videoRepository.findAllByOrderByFileDateDesc()
+		else videoRepository.findAllByOrderByFileDateAsc()
+	private fun getVideoListByStateOK(isDesc: Boolean = false) =
+		if (isDesc) videoRepository.findAllByFileStateOrderByFileDateDesc(FileState.OK)
+		else videoRepository.findAllByFileStateOrderByFileDateAsc(FileState.OK)
+
+	fun searchVideoByFileName(token: String?, fileName: String, isDesc: Boolean = false) =
+		if (isAdmin(token, false)) searchVideoByFileName(fileName, isDesc)
+		else searchVideoByFileNameByStateOK(fileName, isDesc)
+	private fun searchVideoByFileName(fileName: String, isDesc: Boolean = false) =
+		if (isDesc) videoRepository.findAllByFileNameContainingOrderByFileDateDesc(fileName)
+		else videoRepository.findAllByFileNameContainingOrderByFileDateAsc(fileName)
+	private fun searchVideoByFileNameByStateOK(fileName: String, isDesc: Boolean = false) =
+		if (isDesc) videoRepository.findAllByFileStateAndFileNameContainingOrderByFileDateDesc(FileState.OK, fileName)
+		else videoRepository.findAllByFileStateAndFileNameContainingOrderByFileDateAsc(FileState.OK, fileName)
+
+	fun searchVideoByTitle(token: String?, title: String, isDesc: Boolean = false) =
+		if (isAdmin(token, false)) searchVideoByTitle(title, isDesc)
+		else searchVideoByTitleByStateOK(title, isDesc)
+	private fun searchVideoByTitle(title: String, isDesc: Boolean = false) =
+		if (isDesc) videoRepository.findAllByTitleContainingOrderByFileDateDesc(title)
+		else videoRepository.findAllByTitleContainingOrderByFileDateAsc(title)
+	private fun searchVideoByTitleByStateOK(title: String, isDesc: Boolean = false) =
+		if (isDesc) videoRepository.findAllByFileStateAndTitleContainingOrderByFileDateDesc(FileState.OK, title)
+		else videoRepository.findAllByFileStateAndTitleContainingOrderByFileDateAsc(FileState.OK, title)
+
+	fun searchVideoByHasTag(token: String?, hashTag: String, isDesc: Boolean = false) =
+		if (isAdmin(token, false)) searchVideoByHashTag(hashTag, isDesc)
+		else searchVideoByHashTagByStateOK(hashTag, isDesc)
+	private fun searchVideoByHashTag(hashTag: String, isDesc: Boolean = false) =
+		if (isDesc) videoRepository.findAllByHashTagContainingOrderByFileDateDesc(hashTag)
+		else videoRepository.findAllByHashTagContainingOrderByFileDateAsc(hashTag)
+	private fun searchVideoByHashTagByStateOK(hashTag: String, isDesc: Boolean = false) =
+		if (isDesc) videoRepository.findAllByFileStateAndHashTagContainingOrderByFileDateDesc(FileState.OK, hashTag)
+		else videoRepository.findAllByFileStateAndHashTagContainingOrderByFileDateAsc(FileState.OK, hashTag)
+
+	fun searchVideo(token: String?, searchString: String, isDesc: Boolean = false) =
+		if (isAdmin(token, false)) searchVideo(searchString, isDesc)
+		else searchVideoByStateOK(searchString, isDesc)
+	private fun searchVideo(searchString: String, isDesc: Boolean = false) =
+		if (isDesc) videoRepository.findAllByFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateDesc(searchString, searchString, searchString)
+		else videoRepository.findAllByFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateAsc(searchString, searchString, searchString)
+	private fun searchVideoByStateOK(searchString: String, isDesc: Boolean = false) =
+		if (isDesc) videoRepository.findAllByFileStateAfterAndFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateDesc(FileState.OK, searchString, searchString, searchString)
+		else videoRepository.findAllByFileStateAfterAndFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateAsc(FileState.OK, searchString, searchString, searchString)
+
+	fun getVideoByNameStream(token: String?, fileName: String) = getVideoStreamingBodyAsync(
+		if (isAdmin(token, false)) videoRepository.findByFileName(fileName)
+		else videoRepository.findByFileStateAndFileName(FileState.OK, fileName))
+	fun getVideoByIndexStream(token: String?, index: Long) = getVideoStreamingBodyAsync(
+		if (isAdmin(token, false)) videoRepository.findByThisIndex(index)
+		else videoRepository.findByFileStateAndThisIndex(FileState.OK, index))
+	fun getVideoByNameResource(token: String?, fileName: String) = getVideoResourceBodyAsync(
+		if (isAdmin(token, false)) videoRepository.findByFileName(fileName)
+		else videoRepository.findByFileStateAndFileName(FileState.OK, fileName))
+	fun getVideoByIndexResource(token: String?, index: Long) = getVideoResourceBodyAsync(
+		if (isAdmin(token, false)) videoRepository.findByThisIndex(index)
+		else videoRepository.findByFileStateAndThisIndex(FileState.OK, index))
+	fun getVideoByIndexByte(token: String?, index: Long, range: String?): ResponseEntity<ByteArray> {
+		val file = if (isAdmin(token, false)) videoRepository.findByThisIndex(index)
+		else videoRepository.findByFileStateAndThisIndex(FileState.OK, index)
+		return if (file == null) getEmptyByteArray() else getVideoByteArray(file, range)
+	}
+	fun getVideoByNameByte(token: String?, fileName: String, range: String?): ResponseEntity<ByteArray> {
+		val file = if (isAdmin(token, false)) videoRepository.findByFileName(fileName)
+		else videoRepository.findByFileStateAndFileName(FileState.OK, fileName)
+		return if (file == null) getEmptyByteArray() else getVideoByteArray(file, range)
+	}
+	fun getVideoStreamingBodyAsync(file: VideoModel?) = WebAsyncTask(Callable { if (file == null) getEmptyStreamingBody() else getVideoStreamingBody(file) })
+	fun getVideoResourceBodyAsync(file: VideoModel?) = WebAsyncTask(Callable { if (file == null) getEmptyResourceBody() else getVideoResourceBody(file) })
+
+	private fun getEmptyStreamingBody() = ResponseEntity.ok()
+		.header(FConstants.CONTENT_TYPE, "${FConstants.VIDEO_CONTENT}mp4")
+		.header(FConstants.CONTENT_LENGTH, "0")
+		.body(StreamingResponseBody { })
+	private fun getVideoStreamingBody(file: VideoModel): ResponseEntity<StreamingResponseBody> {
+		val filePath = FExtensions.getFilePath(file)
+		val fileSize = FExtensions.getFileSize(filePath)
+		if (!Files.exists(filePath)) {
+			throw FileNotFoundException()
+		}
 		val streamingResponseBody = StreamingResponseBody { x ->
 			val inputStream = FileInputStream(File(filePath.toAbsolutePath().normalize().toString()))
 			val byteArray = ByteArray(FConstants.BYTE_RANGE)
@@ -59,17 +160,45 @@ class VideoStreamService {
 			.header(FConstants.CONTENT_LENGTH, fileSize.toString())
 			.body(streamingResponseBody)
 	}
-	private fun getVideoResourceBody(file: FileModel): ResponseEntity<Resource> {
-		val filePath = getFilePath(file)
-		val fileSize = getFileSize(filePath)
+	private fun getEmptyResourceBody(): ResponseEntity<Resource> {
+		val filePath = FExtensions.getFilePath(FileModel().apply {
+			fileName = "NULL"
+			fileExt = "mp4"
+		})
+		val fileSize = FExtensions.getFileSize(filePath)
+		if (!Files.exists(filePath)) {
+			throw FileNotFoundException()
+		}
+		return ResponseEntity.ok()
+			.header(FConstants.CONTENT_TYPE, "${FConstants.VIDEO_CONTENT}mp4")
+			.header(FConstants.CONTENT_LENGTH, fileSize.toString())
+			.body(UrlResource(filePath.toUri()))
+	}
+	private fun getVideoResourceBody(file: VideoModel): ResponseEntity<Resource> {
+		val filePath = FExtensions.getFilePath(file)
+		val fileSize = FExtensions.getFileSize(filePath)
+		if (!Files.exists(filePath)) {
+			throw FileNotFoundException()
+		}
 		return ResponseEntity.ok()
 			.header(FConstants.CONTENT_TYPE, "${FConstants.VIDEO_CONTENT}${file.fileExt}")
 			.header(FConstants.CONTENT_LENGTH, fileSize.toString())
 			.body(UrlResource(filePath.toUri()))
 	}
-	private fun getVideoByteArray(file: FileModel, range: String?): ResponseEntity<ByteArray> {
-		val filePath = getFilePath(file)
-		val fileSize = getFileSize(filePath)
+	private fun getEmptyByteArray(): ResponseEntity<ByteArray> {
+		return ResponseEntity.ok()
+			.header(FConstants.CONTENT_TYPE, "${FConstants.VIDEO_CONTENT}mp4")
+			.header(FConstants.ACCEPT_RANGES, FConstants.BYTES)
+			.header(FConstants.CONTENT_LENGTH, "0")
+			.header(FConstants.CONTENT_RANGE, "${FConstants.BYTES} 0-0/0")
+			.body(ByteArray(0))
+	}
+	private fun getVideoByteArray(file: VideoModel, range: String?): ResponseEntity<ByteArray> {
+		val filePath = FExtensions.getFilePath(file)
+		val fileSize = FExtensions.getFileSize(filePath)
+		if (!Files.exists(filePath)) {
+			throw FileNotFoundException()
+		}
 		var rangeStart = 0L
 		var rangeEnd = FConstants.CHUNK_SIZE
 		if (range == null) {
@@ -112,6 +241,17 @@ class VideoStreamService {
 			.body(data)
 	}
 
+	@Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
+	fun addVideoCategory(token: String?, data: VideoCategoryModel): VideoCategoryModel {
+		isAdmin(token)
+		return videoCategoryRepository.save(data)
+	}
+	@Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
+	fun addVideo(token: String?, data: VideoModel): VideoModel {
+		isAdmin(token)
+		return videoRepository.save(data)
+	}
+
 	fun readByteRangeNew(filePath: Path, start: Long, end: Long): ByteArray {
 		val data = Files.readAllBytes(filePath)
 		val ret = ByteArray((end - start).toInt() + 1)
@@ -132,27 +272,11 @@ class VideoStreamService {
 		return ret
 	}
 
-	fun getFilePath(file: FileModel) = fileLocation(file.fileType).let { x ->
-		if (file.subPath == null) {
-			x.resolve("${file.fileName}.${file.fileExt}")
-		} else {
-			file.subPath.let { y ->
-				x.resolve("${y}/${file.fileName}.${file.fileExt}")
-			}
-		}
-	}
-	fun getFilePath(fileName: String, enum: Storage) = fileLocation(enum).resolve(fileName)
-	fun getFileSize(path: Path) = Files.size(path)
-
-	fun fileLocation(enum: Storage) = when (enum) {
-		Storage.DEF -> Paths.get(defDirPath).toAbsolutePath().normalize()
-		Storage.VIDEO -> Paths.get(videoDirPath).toAbsolutePath().normalize()
-		else -> throw ResourceNotExistException()
-	}
-	fun folderExist(enum: Storage) = Optional.ofNullable(Files.createDirectories(fileLocation(enum))).orElseThrow { FileDownloadException() }
-	fun enumToInt(enum: Storage) = when (enum) {
-		Storage.DEF -> 0
-		Storage.VIDEO -> 1
-		else -> throw ResourceNotExistException()
-	}
+	fun isAdmin(token: String?, notAdminThrow: Boolean = true): Boolean =
+		token?.let { x ->
+			val user = jwtTokenProvider.getUserData(x)
+			if (UserRole.fromFlag(user.role).contains(UserRole.Admin)) true
+			else if (notAdminThrow) throw AuthenticationEntryPointException()
+			else false
+		} ?: if (notAdminThrow) throw AuthenticationEntryPointException() else false
 }
