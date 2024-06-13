@@ -21,11 +21,9 @@ import javax.crypto.spec.SecretKeySpec
 
 @Component
 class JwtTokenProvider {
-    @Value(value = "\${spring.jwt.secret}")
-    var secretKey: String = ""
+    @Value(value = "\${spring.jwt.secret}") var secretKey: String = ""
     var tokenValidMS = 1000L * 60 * 60 * 24
-    @Autowired
-    lateinit var userDetailService: UserDetailsService
+    @Autowired lateinit var userDetailService: UserDetailsService
     companion object {
         const val authToken: String = "auth_token"
     }

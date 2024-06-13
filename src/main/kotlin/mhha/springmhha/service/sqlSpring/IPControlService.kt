@@ -12,8 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class IPControlService {
-	@Autowired
-	lateinit var ipBlockRepository: IPBlockRepository
+	@Autowired lateinit var ipBlockRepository: IPBlockRepository
 	@Autowired lateinit var jwtTokenProvider: JwtTokenProvider
 
 	fun getIPBlockModel() = ipBlockRepository.findAll()

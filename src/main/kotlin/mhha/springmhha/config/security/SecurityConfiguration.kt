@@ -24,12 +24,9 @@ import org.springframework.security.web.header.HeaderWriterFilter
 @ConditionalOnDefaultWebSecurity
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 class SecurityConfiguration {
-  @Autowired
-  lateinit var jwtTokenProvider: JwtTokenProvider
-  @Autowired
-  lateinit var ipControlService: IPControlService
-  @Autowired
-  lateinit var angularCommonService: AngularCommonService
+  @Autowired lateinit var jwtTokenProvider: JwtTokenProvider
+  @Autowired lateinit var ipControlService: IPControlService
+  @Autowired lateinit var angularCommonService: AngularCommonService
     @Bean
     @Throws(Exception::class)
     fun filterChain(http: HttpSecurity): SecurityFilterChain = http
