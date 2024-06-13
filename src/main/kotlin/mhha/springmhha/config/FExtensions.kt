@@ -1,11 +1,25 @@
 package mhha.springmhha.config
 
+import mhha.springmhha.advice.exception.FileDownloadException
+import mhha.springmhha.advice.exception.ResourceNotExistException
 import mhha.springmhha.config.FExtensions.flag
+import mhha.springmhha.model.common.Storage
 import mhha.springmhha.model.sqlASP.UserRole
 import mhha.springmhha.model.sqlASP.UserRoles
+import mhha.springmhha.model.sqlSpring.common.FileModel
+import mhha.springmhha.model.sqlSpring.common.VideoModel
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
 
+@Component
 object FExtensions {
+	@Value(value = "\${file.defDir}") var defDirPath: String = ""
+	@Value(value = "\${file.videoDir}") var videoDirPath: String = ""
+
 	infix fun UserRoles.allOf(rhs: UserRoles) = this.containsAll(rhs)
 	infix fun UserRoles.and(rhs: UserRole) = EnumSet.of(rhs, *this.toTypedArray())
 	infix fun UserRoles.flag(rhs: UserRole): Int {
@@ -26,5 +40,38 @@ object FExtensions {
 		}
 
 		return ret
+	}
+
+	fun getFilePath(file: VideoModel) = fileLocation(Storage.VIDEO).let { x ->
+		if (file.subPath == null) {
+			x.resolve("${file.fileName}.${file.fileExt}")
+		} else {
+			file.subPath.let { y ->
+				x.resolve("${y}/${file.fileName}.${file.fileExt}")
+			}
+		}
+	}
+	fun getFilePath(file: FileModel) = fileLocation(file.fileType).let { x ->
+		if (file.subPath == null) {
+			x.resolve("${file.fileName}.${file.fileExt}")
+		} else {
+			file.subPath.let { y ->
+				x.resolve("${y}/${file.fileName}.${file.fileExt}")
+			}
+		}
+	}
+	fun getFilePath(fileName: String, enum: Storage) = fileLocation(enum).resolve(fileName)
+	fun getFileSize(path: Path) = Files.size(path)
+
+	fun fileLocation(enum: Storage) = when (enum) {
+		Storage.DEF -> Paths.get(defDirPath).toAbsolutePath().normalize()
+		Storage.VIDEO -> Paths.get(videoDirPath).toAbsolutePath().normalize()
+		else -> throw ResourceNotExistException()
+	}
+	fun folderExist(enum: Storage) = Optional.ofNullable(Files.createDirectories(fileLocation(enum))).orElseThrow { FileDownloadException() }
+	fun enumToInt(enum: Storage) = when (enum) {
+		Storage.DEF -> 0
+		Storage.VIDEO -> 1
+		else -> throw ResourceNotExistException()
 	}
 }
