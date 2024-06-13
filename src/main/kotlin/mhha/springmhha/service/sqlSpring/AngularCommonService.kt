@@ -38,107 +38,66 @@ class AngularCommonService {
     fun getNewsAll() = newsRepository.findAllByOrderByThisIndexDesc()
     fun getNewsItem() = newsRepository.findFirstByOrderByThisIndexDesc()
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
-    fun addNewsItem(token: String, data: NewsItem): NewsItem {
-        isAdmin(token)
-        return newsRepository.save(data)
-    }
+    fun addNewsItem(token: String, data: NewsItem): NewsItem =
+        isAdmin(token).let { newsRepository.save(data) }
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
-    fun addNewsItem(token: String, data: List<NewsItem>): List<NewsItem> {
-        isAdmin(token)
-        return newsRepository.saveAll(data)
-    }
+    fun addNewsItem(token: String, data: List<NewsItem>): List<NewsItem> =
+        isAdmin(token).let { newsRepository.saveAll(data) }
 
-    fun getDocMenuAll(isDesc: Boolean = false) = if (isDesc) {
-        docMenuRepository.findAllByDocMenuItemOrderByThisIndexDesc(null)
-    } else {
-        docMenuRepository.findAllByDocMenuItemOrderByThisIndexAsc(null)
-    }
+    fun getDocMenuAll(isDesc: Boolean = false) =
+        if (isDesc) docMenuRepository.findAllByDocMenuItemOrderByThisIndexDesc(null)
+        else docMenuRepository.findAllByDocMenuItemOrderByThisIndexAsc(null)
     fun getDocMenu(name: String) = docMenuRepository.findByName(name)
     fun getDocMenu(name: List<String>) = docMenuRepository.findAllByNameIn(name)
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
-    fun addDocMenuItem(token: String, data: DocMenuItem): DocMenuItem {
-        isAdmin(token)
-        return docMenuRepository.save(data)
-    }
+    fun addDocMenuItem(token: String, data: DocMenuItem): DocMenuItem =
+        isAdmin(token).let { docMenuRepository.save(data) }
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
-    fun addDocMenuItem(token: String, data: List<DocMenuItem>): List<DocMenuItem> {
-        isAdmin(token)
-        return docMenuRepository.saveAll(data)
-    }
+    fun addDocMenuItem(token: String, data: List<DocMenuItem>): List<DocMenuItem> =
+        isAdmin(token).let { docMenuRepository.saveAll(data) }
 
-    fun getWriteDirectoryAll(isDesc: Boolean = false) = if (isDesc) {
-        writeDirectoryRepository.findAllByWriteDirectoryOrderByThisIndexDesc(null)?.let { x ->
-            x.forEach { y -> y.initFile() }
-            x
-        }
-    } else {
-        writeDirectoryRepository.findAllByWriteDirectoryOrderByThisIndexAsc(null)?.let { x ->
-            x.forEach { y -> y.initFile() }
-            x
-        }
-    }
-    fun getWriteDirectoryName(name: String) = writeDirectoryRepository.findByDirName(name)?.let {
-        it.initFile()
-        it
-    }
-    fun getWriteDirectoryNameWithFile(name: String) = writeDirectoryRepository.findByDirName(name)?.let {
-        setWriteFiles(it)
-        it
-    }
+    fun getWriteDirectoryAll(isDesc: Boolean = false) =
+        if (isDesc) writeDirectoryRepository.findAllByWriteDirectoryOrderByThisIndexDesc(null)?.onEach { x -> x.initFile() }
+        else writeDirectoryRepository.findAllByWriteDirectoryOrderByThisIndexAsc(null)?.onEach { x -> x.initFile() }
+    fun getWriteDirectoryName(name: String) = writeDirectoryRepository.findByDirName(name)?.apply { initFile() }
+    fun getWriteDirectoryNameWithFile(name: String) = writeDirectoryRepository.findByDirName(name)?.apply { setWriteFiles(this) }
     fun setWriteFiles(writeDirectory: WriteDirectory) {
         writeDirectory.writeFiles = writeFileRepository.findAllByWriteDirectory(writeDirectory).toMutableList()
-        writeDirectory.children?.forEach {
-            setWriteFiles(it)
-        }
+        writeDirectory.children?.forEach { x -> setWriteFiles(x) }
     }
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
-    fun addWriteDirectory(token: String, data: WriteDirectory): WriteDirectory {
-        isAdmin(token)
-        return writeDirectoryRepository.save(data)
-    }
+    fun addWriteDirectory(token: String, data: WriteDirectory): WriteDirectory =
+        isAdmin(token).let { writeDirectoryRepository.save(data) }
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
-    fun editWriteDirectory(token: String, data: WriteDirectory): WriteDirectory {
-        isAdmin(token)
-        return writeDirectoryRepository.save(data)
-    }
+    fun editWriteDirectory(token: String, data: WriteDirectory): WriteDirectory =
+        isAdmin(token).let { writeDirectoryRepository.save(data) }
 
-    fun getWriteFileAll(token: String): List<WriteFile>? {
-        val user = jwtTokenProvider.getUserData(token)
-        if (UserRole.fromFlag(user.role).contains(UserRole.Admin)) {
-            return writeFileRepository.findAll()
+    fun getWriteFileAll(token: String): List<WriteFile>? =
+        jwtTokenProvider.getUserData(token).let { x ->
+            if (UserRole.fromFlag(x.role).contains(UserRole.Admin)) writeFileRepository.findAll()
+            else writeFileRepository.findAllByAuthIndexOrderByThisIndexDesc(x.thisIndex)
         }
-
-        return writeFileRepository.findAllByAuthIndexOrderByThisIndexDesc(user.thisIndex)
-    }
     fun getWriteFileName(name: String) = writeFileRepository.findByName(name)
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
-    fun addWriteFile(token: String, data: WriteFile): WriteFile {
-        isAdmin(token)
-        data.authIndex = jwtTokenProvider.getUserData(token).thisIndex
-        data.status = WriteFileStatus.None
-        return writeFileRepository.save(data)
-    }
+    fun addWriteFile(token: String, data: WriteFile): WriteFile =
+        isAdmin(token).let { _ ->
+            data.authIndex = jwtTokenProvider.getUserData(token).thisIndex
+            data.status = WriteFileStatus.None
+            writeFileRepository.save(data)
+        }
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
-    fun editWriteFile(token: String, data: WriteFile): WriteFile {
-        if (!isAdmin(token, false)) {
-            val user = jwtTokenProvider.getUserData(token)
-            if (user.thisIndex != data.authIndex) {
-                throw AuthenticationEntryPointException()
-            }
+    fun editWriteFile(token: String, data: WriteFile): WriteFile =
+        isAdmin(token, false).let { x ->
+            if (!x) jwtTokenProvider.getUserData(token).let { y ->
+                if (y.thisIndex != data.authIndex) throw AuthenticationEntryPointException() }
+            writeFileRepository.save(data)
         }
 
-        return writeFileRepository.save(data)
-    }
-
-    fun isAdmin(token: String, notAdminThrow: Boolean = true): Boolean {
-        val user = jwtTokenProvider.getUserData(token)
-        if (UserRole.fromFlag(user.role).contains(UserRole.Admin)) {
-            return true
-        }
-        if (notAdminThrow) {
-            throw AuthenticationEntryPointException()
-        }
-
-        return false
-    }
+    fun isAdmin(token: String?, notAdminThrow: Boolean = true): Boolean =
+        token?.let { x ->
+            val user = jwtTokenProvider.getUserData(x)
+            if (UserRole.fromFlag(user.role).contains(UserRole.Admin)) true
+            else if (notAdminThrow) throw AuthenticationEntryPointException()
+            else false
+        } ?: if (notAdminThrow) throw AuthenticationEntryPointException() else false
 }
