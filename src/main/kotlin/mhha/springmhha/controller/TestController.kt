@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*
 @Tag(name = "TestController")
 @RestController
 @RequestMapping(value = ["/test"])
+@CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
 class TestController {
     @Autowired lateinit var responseService: ResponseService
     @Autowired lateinit var userDataService: UserDataService
@@ -21,12 +22,10 @@ class TestController {
         return responseService.getSuccessResult()
     }
     @GetMapping(value = ["/signIn"])
-    @CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
     fun signIn(@RequestParam(required = true) id: String, @RequestParam(required = true) pw: String): IRestResult {
         return responseService.getResult(userDataService.signIn(id, pw))
     }
     @GetMapping(value = ["/token"])
-    @CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
     fun getUer(@RequestHeader(value = JwtTokenProvider.authToken) token: String): IRestResult {
         return responseService.getResult(userDataService.getUserDataToken(token))
     }
