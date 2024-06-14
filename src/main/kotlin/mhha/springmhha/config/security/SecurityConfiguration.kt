@@ -1,5 +1,6 @@
 package mhha.springmhha.config.security
 
+import mhha.springmhha.config.RefererCheckFilter
 import mhha.springmhha.service.sqlSpring.AngularCommonService
 import mhha.springmhha.service.sqlSpring.IPControlService
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.intercept.AuthorizationFilter
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.header.HeaderWriterFilter
 
 
@@ -24,6 +26,7 @@ import org.springframework.security.web.header.HeaderWriterFilter
 @ConditionalOnDefaultWebSecurity
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 class SecurityConfiguration {
+  @Autowired lateinit var refererCheckFilter: RefererCheckFilter
   @Autowired lateinit var jwtTokenProvider: JwtTokenProvider
   @Autowired lateinit var ipControlService: IPControlService
   @Autowired lateinit var angularCommonService: AngularCommonService
@@ -36,6 +39,7 @@ class SecurityConfiguration {
         it.authenticationEntryPoint(CustomAuthenticationEntryPoint())
         it.accessDeniedHandler(CustomAccessDeniedHandler())
       }
+      .addFilterBefore(refererCheckFilter, UsernamePasswordAuthenticationFilter::class.java)
 //      .addFilterBefore(JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter::class.java)
       .addFilterBefore(IPFilter(ipControlService), HeaderWriterFilter::class.java)
       .addFilterAfter(LogFilter(angularCommonService), AuthorizationFilter::class.java)
