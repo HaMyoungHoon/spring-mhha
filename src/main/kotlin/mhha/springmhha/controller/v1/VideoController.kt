@@ -64,33 +64,33 @@ class VideoController {
 	                @RequestParam(required = false) isDesc: Boolean?) =
 		responseService.getResult(videoStreamService.searchVideo(token, searchString, isDesc ?: false))
 
-	@GetMapping("/get/name/stream/name/{name}")
+	@GetMapping("/get/play/stream/name/{name}")
 	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
 	fun getVideoNameStream(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                       @PathVariable(required = true) name: String) =
 		videoStreamService.getVideoByNameStream(token, name)
-	@GetMapping("/get/index/stream/index/{index}")
+	@GetMapping("/get/play/stream/index/{index}")
 	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
 	fun getVideoIndexStream(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                        @PathVariable(required = true) index: Long) =
 		videoStreamService.getVideoByIndexStream(token, index)
-	@GetMapping("/get/name/resource/name/{name}")
+	@GetMapping("/get/play/resource/name/{name}")
 	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
 	fun getVideoNameResource(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                         @PathVariable(required = true) name: String) =
 		videoStreamService.getVideoByNameResource(token, name)
-	@GetMapping("/get/index/resource/index/{index}")
+	@GetMapping("/get/play/resource/index/{index}")
 	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
 	fun getVideoIndexResource(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                          @PathVariable(required = true) index: Long) =
 		videoStreamService.getVideoByIndexResource(token, index)
-	@GetMapping("/get/name/byte/name/{name}")
+	@GetMapping("/get/play/byte/name/{name}")
 	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
 	fun getVideoNameByte(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                     @RequestHeader(value = "Range", required = false) httpRangeList: String?,
 	                     @PathVariable(required = true) name: String) =
 		videoStreamService.getVideoByNameByte(token, name, httpRangeList)
-	@GetMapping("/get/index/byte/index/{index}")
+	@GetMapping("/get/play/byte/index/{index}")
 	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
 	fun getVideoIndexByte(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                      @RequestHeader(value = "Range", required = false) httpRangeList: String?,
