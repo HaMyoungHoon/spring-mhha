@@ -28,7 +28,9 @@ class VideoStreamService {
 	@Autowired lateinit var videoCategoryRepository: VideoCategoryRepository
 	@Autowired lateinit var videoRepository: VideoRepository
 	@Autowired lateinit var jwtTokenProvider: JwtTokenProvider
+	@Autowired lateinit var fExt: FExtensions
 
+	fun getFindRootDir(dirName: String) = videoCategoryRepository.findRootDirName(dirName)
 	fun getVideoCategory(dirName: String) = videoCategoryRepository.findByDirName(dirName)?.apply { init() }
 	fun getVideoCategoryWithVideo(dirName: String) = videoCategoryRepository.findByDirName(dirName)?.apply { getVideoList(this) }
 	fun getVideoCategoryList(token: String?, isDesc: Boolean = true) =
@@ -138,8 +140,8 @@ class VideoStreamService {
 		.header(FConstants.CONTENT_LENGTH, "0")
 		.body(StreamingResponseBody { })
 	private fun getVideoStreamingBody(file: VideoModel): ResponseEntity<StreamingResponseBody> {
-		val filePath = FExtensions.getFilePath(file)
-		val fileSize = FExtensions.getFileSize(filePath)
+		val filePath = fExt.getFilePath(file)
+		val fileSize = fExt.getFileSize(filePath)
 		if (!Files.exists(filePath)) {
 			throw FileNotFoundException()
 		}
@@ -161,11 +163,11 @@ class VideoStreamService {
 			.body(streamingResponseBody)
 	}
 	private fun getEmptyResourceBody(): ResponseEntity<Resource> {
-		val filePath = FExtensions.getFilePath(FileModel().apply {
+		val filePath = fExt.getFilePath(VideoModel().apply {
 			fileName = "NULL"
 			fileExt = "mp4"
 		})
-		val fileSize = FExtensions.getFileSize(filePath)
+		val fileSize = fExt.getFileSize(filePath)
 		if (!Files.exists(filePath)) {
 			throw FileNotFoundException()
 		}
@@ -175,8 +177,8 @@ class VideoStreamService {
 			.body(UrlResource(filePath.toUri()))
 	}
 	private fun getVideoResourceBody(file: VideoModel): ResponseEntity<Resource> {
-		val filePath = FExtensions.getFilePath(file)
-		val fileSize = FExtensions.getFileSize(filePath)
+		val filePath = fExt.getFilePath(file)
+		val fileSize = fExt.getFileSize(filePath)
 		if (!Files.exists(filePath)) {
 			throw FileNotFoundException()
 		}
@@ -194,8 +196,8 @@ class VideoStreamService {
 			.body(ByteArray(0))
 	}
 	private fun getVideoByteArray(file: VideoModel, range: String?): ResponseEntity<ByteArray> {
-		val filePath = FExtensions.getFilePath(file)
-		val fileSize = FExtensions.getFileSize(filePath)
+		val filePath = fExt.getFilePath(file)
+		val fileSize = fExt.getFileSize(filePath)
 		if (!Files.exists(filePath)) {
 			throw FileNotFoundException()
 		}

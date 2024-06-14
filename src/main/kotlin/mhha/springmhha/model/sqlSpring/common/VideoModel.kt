@@ -29,9 +29,9 @@ data class VideoModel(
 	@ManyToOne(fetch = FetchType.LAZY, optional = true)
 	@JoinColumn
 	@JsonBackReference
-	var videoCategory: VideoCategoryModel?,
+	var videoCategory: VideoCategoryModel? = null,
 	@Column(insertable = false, updatable = false, name = "videoCategory_thisIndex")
-	var videoCategoryThisIndex: Long?,
+	var videoCategoryThisIndex: Long? = null,
 ) {
 	fun setChild(): VideoModel {
 		return this

@@ -1,5 +1,7 @@
 package mhha.springmhha.controller.v1
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import mhha.springmhha.advice.exception.NotValidOperationException
 import mhha.springmhha.advice.exception.ResourceAlreadyExistException
@@ -63,33 +65,33 @@ class VideoController {
 		responseService.getResult(videoStreamService.searchVideo(token, searchString, isDesc ?: false))
 
 	@GetMapping("/get/name/stream/name/{name}")
-	@CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
+	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
 	fun getVideoNameStream(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                       @PathVariable(required = true) name: String) =
 		videoStreamService.getVideoByNameStream(token, name)
 	@GetMapping("/get/index/stream/index/{index}")
-	@CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
+	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
 	fun getVideoIndexStream(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                        @PathVariable(required = true) index: Long) =
 		videoStreamService.getVideoByIndexStream(token, index)
 	@GetMapping("/get/name/resource/name/{name}")
-	@CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
+	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
 	fun getVideoNameResource(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                         @PathVariable(required = true) name: String) =
 		videoStreamService.getVideoByNameResource(token, name)
 	@GetMapping("/get/index/resource/index/{index}")
-	@CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
+	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
 	fun getVideoIndexResource(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                          @PathVariable(required = true) index: Long) =
 		videoStreamService.getVideoByIndexResource(token, index)
 	@GetMapping("/get/name/byte/name/{name}")
-	@CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
+	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
 	fun getVideoNameByte(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                     @RequestHeader(value = "Range", required = false) httpRangeList: String?,
 	                     @PathVariable(required = true) name: String) =
 		videoStreamService.getVideoByNameByte(token, name, httpRangeList)
 	@GetMapping("/get/index/byte/index/{index}")
-	@CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
+	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
 	fun getVideoIndexByte(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                      @RequestHeader(value = "Range", required = false) httpRangeList: String?,
 	                      @PathVariable(required = true) index: String) =
@@ -98,7 +100,7 @@ class VideoController {
 	@PostMapping("/post/category")
 	@CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
 	fun postCategory(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
-	                 @RequestParam(required = false) parentName: String?,
+	                 @Schema(description = "root/path/path 이렇게 해야함") @RequestParam(required = false) parentName: String?,
 									 @RequestBody data: VideoCategoryModel): IRestResult {
 		if (data.dirName.isEmpty()) {
 			throw NotValidOperationException()
@@ -107,19 +109,29 @@ class VideoController {
 			throw ResourceAlreadyExistException()
 		}
 		if (parentName != null) {
-			val parent = videoStreamService.getVideoCategory(parentName) ?: throw ResourceNotExistException()
-			parent.children?.add(data)
-			parent.setChild()
-			return responseService.getResult(videoStreamService.addVideoCategory(token, parent))
+			val dirs = parentName.split("/")
+			if (dirs.isEmpty()) {
+				throw ResourceNotExistException()
+			}
+			val rootDir = videoStreamService.getFindRootDir(dirs[0]) ?: throw ResourceNotExistException()
+			var child: VideoCategoryModel = rootDir
+			for (i in 1 until dirs.size) {
+				val buff = child.children?.firstOrNull { x -> x.dirName == dirs[i] } ?: throw ResourceNotExistException()
+				child = buff
+			}
+			child.children?.add(data)
+			child.setChild()
+			return responseService.getResult(videoStreamService.addVideoCategory(token, child))
 		}
 
 		data.setChild()
 		return responseService.getResult(videoStreamService.addVideoCategory(token, data))
 	}
 	@PostMapping("/post/video")
+	@Operation(summary = "post video path", description = "실제로 video file 을 업로드 하는 것은 아님.")
 	@CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
 	fun postVideo(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
-	              @RequestParam(required = true) dirName: String,
+	              @Schema(description = "root/path/path 이렇게 해야함") @RequestParam(required = true) dirName: String,
 	              @RequestBody data: VideoModel): IRestResult {
 		if (data.fileName.isEmpty()) {
 			throw NotValidOperationException()
@@ -128,8 +140,17 @@ class VideoController {
 		if (exist != null) {
 			throw ResourceAlreadyExistException()
 		}
-		val dir = videoStreamService.getVideoCategory(dirName) ?: throw ResourceNotExistException()
-		data.videoCategory = dir
+		val dirs = dirName.split("/")
+		if (dirs.isEmpty()) {
+			throw ResourceNotExistException()
+		}
+		val rootDir = videoStreamService.getFindRootDir(dirs[0]) ?: throw ResourceNotExistException()
+		var child: VideoCategoryModel = rootDir
+		for (i in 1 until dirs.size) {
+			val buff = child.children?.firstOrNull { x -> x.dirName == dirs[i] } ?: throw ResourceNotExistException()
+			child = buff
+		}
+		data.videoCategory = child
 		return responseService.getResult(videoStreamService.addVideo(token, data))
 	}
 }
