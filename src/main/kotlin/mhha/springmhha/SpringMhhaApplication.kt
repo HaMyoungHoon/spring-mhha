@@ -9,17 +9,18 @@ import org.springframework.scheduling.annotation.EnableAsync
 @SpringBootApplication
 @EnableAsync
 class SpringMhhaApplication {
-    companion object {
-        var ctx: ConfigurableApplicationContext? = null
-    }
+  companion object {
+    var ctx: ConfigurableApplicationContext? = null
+  }
+
 }
 
 fun main(args: Array<String>) {
-    val app = SpringApplicationBuilder()
-    app.sources(SpringMhhaApplication::class.java)
-            .listeners(ApplicationPidFileWriter("./spring-mhha.pid"))
-            .build()
+  val app = SpringApplicationBuilder()
+  app.sources(SpringMhhaApplication::class.java)
+    .listeners(ApplicationPidFileWriter("./spring-mhha.pid"))
+    .build()
 
-    SpringMhhaApplication.ctx = app.run(*args)
+  SpringMhhaApplication.ctx = app.run(*args)
 //    runApplication<SpringMhhaApplication>(*args)
 }

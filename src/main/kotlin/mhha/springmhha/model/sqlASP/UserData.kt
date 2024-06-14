@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
-import mhha.springmhha.config.FExtensions.getFlag
+import mhha.springmhha.config.FExtensions.Companion.getFlag
 import mhha.springmhha.model.common.CustomUserModel
 import java.sql.Timestamp
 

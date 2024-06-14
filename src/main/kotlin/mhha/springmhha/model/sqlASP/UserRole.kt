@@ -1,6 +1,6 @@
 package mhha.springmhha.model.sqlASP
 
-import mhha.springmhha.config.FExtensions.and
+import mhha.springmhha.config.FExtensions.Companion.and
 import java.util.EnumSet
 
 enum class UserRole(var flag: Int) {
