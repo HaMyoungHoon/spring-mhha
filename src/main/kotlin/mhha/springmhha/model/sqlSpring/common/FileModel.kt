@@ -16,5 +16,7 @@ data class FileModel(
 	@Column
 	var fileType: Storage = Storage.DEF,
 	@Column(columnDefinition = "nvarchar(300)")
-	var subPath: String? = null
+	var subPath: String? = null,
+	@Column
+	var fileState: FileState = FileState.OK
 )
