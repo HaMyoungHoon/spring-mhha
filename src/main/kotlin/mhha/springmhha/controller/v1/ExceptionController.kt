@@ -19,6 +19,6 @@ class ExceptionController {
 
     @GetMapping(value = ["/accessDenied"])
     fun accessDeniedException(): IRestResult {
-        throw AccessDeniedException("")
+        throw AccessDeniedException("접근이 거부되었습니다.")
     }
 }
