@@ -16,11 +16,6 @@ import org.springframework.web.bind.annotation.*
 class TestController {
     @Autowired lateinit var responseService: ResponseService
     @Autowired lateinit var userDataService: UserDataService
-
-    @GetMapping(value = ["/test"])
-    fun test(): IRestResult {
-        return responseService.getSuccessResult()
-    }
     @GetMapping(value = ["/signIn"])
     fun signIn(@RequestParam(required = true) id: String, @RequestParam(required = true) pw: String): IRestResult {
         return responseService.getResult(userDataService.signIn(id, pw))
