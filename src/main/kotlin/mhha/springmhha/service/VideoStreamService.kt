@@ -31,6 +31,7 @@ class VideoStreamService {
 	@Autowired lateinit var fExt: FExtensions
 
 	fun getFindRootDir(dirName: String) = videoCategoryRepository.findRootDirName(dirName)
+	fun getVideoCategory(thisIndex: Long) = videoCategoryRepository.findByThisIndex(thisIndex)?.apply { init() }
 	fun getVideoCategory(dirName: String) = videoCategoryRepository.findByDirName(dirName)?.apply { init() }
 	fun getVideoCategoryWithVideo(dirName: String) = videoCategoryRepository.findByDirName(dirName)?.apply { getVideoList(this) }
 	fun getVideoCategoryList(token: String?, isDesc: Boolean = true) =
@@ -42,12 +43,12 @@ class VideoStreamService {
 	private fun getVideoCategoryListByStateOK(isDesc: Boolean) =
 		if (isDesc) videoCategoryRepository.findAllByVideoCategoryAndVideoCategoryStateNotOrderByThisIndexDesc(null, VideoCategoryState.DELETE)?.onEach { x -> x.init() }
 		else videoCategoryRepository.findAllByVideoCategoryAndVideoCategoryStateNotOrderByThisIndexAsc(null, VideoCategoryState.DELETE)?.onEach { x -> x.init() }
-	fun getVideoCategoryWithChild(token: String?, name: String, isDesc: Boolean = true) =
-		if (isAdmin(token, false)) videoCategoryRepository.findByDirName(name)?.apply { setVideoCategoryVideo(token, this, isDesc) }
-		else videoCategoryRepository.findByVideoCategoryStateAndDirName(VideoCategoryState.OK, name)?.apply { setVideoCategoryVideo(token, this, isDesc) }
+	fun getVideoCategoryWithChild(token: String?, thisIndex: Long, isDesc: Boolean = true) =
+		if (isAdmin(token, false)) videoCategoryRepository.findByThisIndex(thisIndex)?.apply { setVideoCategoryVideo(token, this, isDesc) }
+		else videoCategoryRepository.findByVideoCategoryStateAndThisIndex(VideoCategoryState.OK, thisIndex)?.apply { setVideoCategoryVideo(token, this, isDesc) }
 	private fun setVideoCategoryVideo(token: String?, videoCategoryModel: VideoCategoryModel, isDesc: Boolean = true) {
 		videoCategoryModel.video = getVideoList(token, videoCategoryModel, isDesc)?.toMutableList()
-		videoCategoryModel.children?.onEach { setVideoCategoryVideo(token, videoCategoryModel, isDesc) }
+		videoCategoryModel.children?.onEach { x -> setVideoCategoryVideo(token, x, isDesc) }
 	}
 	private fun getVideoList(token: String?, videoCategoryModel: VideoCategoryModel, isDesc: Boolean = false) =
 		if (isAdmin(token, false)) getVideoList(videoCategoryModel, isDesc)

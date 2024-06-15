@@ -14,6 +14,7 @@ interface VideoCategoryRepository: JpaRepository<VideoCategoryModel, Long> {
 	fun findAllByVideoCategoryAndVideoCategoryStateNotOrderByThisIndexAsc(videoCategory: VideoCategoryModel?, videoCategoryState: VideoCategoryState): List<VideoCategoryModel>?
 	fun findByThisIndex(thisIndex: Long): VideoCategoryModel?
 	fun findByDirName(dirName: String): VideoCategoryModel?
+	fun findByVideoCategoryStateAndThisIndex(videoCategoryState: VideoCategoryState, thisIndex: Long): VideoCategoryModel?
 	fun findByVideoCategoryStateAndDirName(videoCategoryState: VideoCategoryState, dirName: String): VideoCategoryModel?
 
 	@Query("SELECT * FROM VideoCategoryModel WHERE dirName = :dirName AND videoCategory_thisIndex IS NULL", nativeQuery = true)
