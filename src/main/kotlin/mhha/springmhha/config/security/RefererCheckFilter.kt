@@ -1,10 +1,11 @@
-package mhha.springmhha.config
+package mhha.springmhha.config.security
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpFilter
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import mhha.springmhha.config.FConstants
 import org.springframework.stereotype.Component
 import java.io.IOException
 

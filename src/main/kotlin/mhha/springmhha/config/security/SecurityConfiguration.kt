@@ -1,6 +1,5 @@
 package mhha.springmhha.config.security
 
-import mhha.springmhha.config.RefererCheckFilter
 import mhha.springmhha.service.sqlSpring.AngularCommonService
 import mhha.springmhha.service.sqlSpring.IPControlService
 import org.springframework.beans.factory.annotation.Autowired
