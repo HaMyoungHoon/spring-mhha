@@ -1,0 +1,63 @@
+spring:
+  application:
+  name: spring-mhha
+
+  datasource:
+    spring-mssql:
+      driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+      jdbc-url: jdbc:sqlserver://127.0.0.1:14333;encrypt=true;trustServerCertificate=true
+      username: sa
+      password: master
+
+    asp-mssql:
+      driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+      jdbc-url: jdbc:sqlserver://127.0.0.1:1433;encrypt=true;trustServerCertificate=true
+      username: sa
+      password: master
+
+  messages:
+    basename: i18n/exception
+    encoding: UTF-8
+
+  jwt:
+    secret: 12345678123456781234567812345678
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 200MB
+      max-request-size: 200MB
+
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  mvc:
+    async:
+      request-timeout: -1
+
+  http-port: 80
+
+
+server:
+  port: 443
+  ssl:
+    key-store: 127.0.0.1.jks
+    key-store-password: '127.0.0.1'
+  shutdown: immediate
+  forward-headers-strategy: native
+
+logging:
+  level:
+    web: debug
+    org:
+      springframework:
+        web: debug
+      hibernate:
+        sql: debug
+        type: debug
+
+file:
+  defDir: F:/STORAGE
+  videoDir: F:/STORAGE/VIDEO
+  imageDir: F:/STORAGE/IMAGE
+  documentDir: F:/STORAGE/DOCUMENT
+  musicDir: F:/STORAGE/MUSIC
