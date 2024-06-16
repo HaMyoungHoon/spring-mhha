@@ -44,9 +44,18 @@ class AngularCommonService {
     fun addNewsItem(token: String, data: List<NewsItem>): List<NewsItem> =
         isAdmin(token).let { newsRepository.saveAll(data) }
 
-    fun getDocMenuAll(isDesc: Boolean = false) =
-        if (isDesc) docMenuRepository.findAllByDocMenuItemOrderByThisIndexDesc(null)
-        else docMenuRepository.findAllByDocMenuItemOrderByThisIndexAsc(null)
+    fun getDocMenuAll(token: String?, isDesc: Boolean = false) =
+        if (isAdmin(token, false)) {
+            if (isDesc) docMenuRepository.findAllByDocMenuItemOrderByThisIndexDesc(null)
+            else docMenuRepository.findAllByDocMenuItemOrderByThisIndexAsc(null)
+        } else {
+            if (isDesc) docMenuRepository.findAllByMenuStateAndDocMenuItemOrderByThisIndexDesc(DocMenuState.OK, null)?.onEach { x ->
+                x.removeChildMenuStateNot(DocMenuState.OK)
+            }?.apply { removeAll { x -> x.menuState != DocMenuState.OK } }
+            else docMenuRepository.findAllByMenuStateAndDocMenuItemOrderByThisIndexAsc(DocMenuState.OK, null)?.onEach { x ->
+                x.removeChildMenuStateNot(DocMenuState.OK)
+            }?.apply { removeAll { x -> x.menuState != DocMenuState.OK } }
+        }
     fun getDocMenu(name: String) = docMenuRepository.findByName(name)
     fun getDocMenu(name: List<String>) = docMenuRepository.findAllByNameIn(name)
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)

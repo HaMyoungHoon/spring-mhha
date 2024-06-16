@@ -22,6 +22,8 @@ data class DocMenuItem(
 	var href: String?,
 	@Column(columnDefinition = "nvarchar(100)")
 	var badge: String?,
+	@Column
+	var menuState: DocMenuState = DocMenuState.OK,
 	@OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
 	@JoinColumn(name = "children_thisIndex")
 	@JsonManagedReference
@@ -38,5 +40,21 @@ data class DocMenuItem(
 			it.setChild()
 		}
 		return this
+	}
+	fun removeChildMenuStateNot(menuState: DocMenuState) {
+		children?.forEach { x ->
+			x.removeChildMenuStateNot(menuState)
+		}
+		children?.removeAll { x ->
+			x.menuState != menuState
+		}
+	}
+	fun removeChildMenuState(menuState: DocMenuState) {
+		children?.forEach { x ->
+			x.removeChildMenuState(menuState)
+		}
+		children?.removeAll { x ->
+			x.menuState == menuState
+		}
 	}
 }

@@ -20,10 +20,9 @@ class AngularDocMenuController {
     @Autowired lateinit var angularCommonService: AngularCommonService
 
     @GetMapping(value = ["/get/menu"])
-    fun getDocMenu(@RequestParam(required = false) isDesc: Boolean): IRestResult {
-        val menu = angularCommonService.getDocMenuAll(isDesc)
-        return responseService.getResult(menu?.distinct())
-    }
+    fun getDocMenu(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
+                   @RequestParam(required = false) isDesc: Boolean) =
+        responseService.getResult(angularCommonService.getDocMenuAll(token, isDesc))
     @PostMapping(value = ["/post/menu"])
     @CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
     fun postDocMenu(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
