@@ -108,11 +108,11 @@ class VideoStreamService {
 		if (isAdmin(token, false)) searchVideo(searchString, isDesc)
 		else searchVideoByStateOK(searchString, isDesc)
 	private fun searchVideo(searchString: String, isDesc: Boolean = false) =
-		if (isDesc) videoRepository.findAllByFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateDesc(searchString, searchString, searchString)
-		else videoRepository.findAllByFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateAsc(searchString, searchString, searchString)
+		if (isDesc) videoRepository.findAllByTitleContainingOrHashTagContainingOrderByFileDateDesc(searchString, searchString)
+		else videoRepository.findAllByTitleContainingOrHashTagContainingOrderByFileDateAsc(searchString, searchString)
 	private fun searchVideoByStateOK(searchString: String, isDesc: Boolean = false) =
-		if (isDesc) videoRepository.findAllByFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateDesc(searchString, searchString, searchString)?.apply { removeAll { x -> x.fileState != FileState.OK } }
-		else videoRepository.findAllByFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateAsc(searchString, searchString, searchString)?.apply { removeAll { x -> x.fileState != FileState.OK } }
+		if (isDesc) videoRepository.findAllByTitleContainingOrHashTagContainingOrderByFileDateDesc(searchString, searchString)?.apply { removeAll { x -> x.fileState != FileState.OK } }
+		else videoRepository.findAllByTitleContainingOrHashTagContainingOrderByFileDateAsc(searchString, searchString)?.apply { removeAll { x -> x.fileState != FileState.OK } }
 
 	fun getVideoByNameStream(token: String?, fileName: String) = getVideoStreamingBodyAsync(
 		if (isAdmin(token, false)) videoRepository.findByFileName(fileName)

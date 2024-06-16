@@ -33,6 +33,6 @@ interface VideoRepository: JpaRepository<VideoModel, Long> {
 	fun findAllByHashTagContainingOrderByFileDateAsc(hashTag: String): List<VideoModel>?
 	fun findAllByFileStateAndHashTagContainingOrderByFileDateDesc(fileState: FileState, hashTag: String): List<VideoModel>?
 	fun findAllByFileStateAndHashTagContainingOrderByFileDateAsc(fileState: FileState, hashTag: String): List<VideoModel>?
-	fun findAllByFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateDesc(fileName: String, title: String, hashTag: String): MutableList<VideoModel>?
-	fun findAllByFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateAsc(fileName: String, title: String, hashTag: String): MutableList<VideoModel>?
+	fun findAllByTitleContainingOrHashTagContainingOrderByFileDateDesc(title: String, hashTag: String): MutableList<VideoModel>?
+	fun findAllByTitleContainingOrHashTagContainingOrderByFileDateAsc(title: String, hashTag: String): MutableList<VideoModel>?
 }
