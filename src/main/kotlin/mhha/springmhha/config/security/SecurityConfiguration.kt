@@ -3,6 +3,7 @@ package mhha.springmhha.config.security
 import mhha.springmhha.service.sqlSpring.AngularCommonService
 import mhha.springmhha.service.sqlSpring.IPControlService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.autoconfigure.security.ConditionalOnDefaultWebSecurity
 import org.springframework.context.annotation.Bean
@@ -25,6 +26,7 @@ import org.springframework.security.web.header.HeaderWriterFilter
 @ConditionalOnDefaultWebSecurity
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 class SecurityConfiguration {
+  @Value(value = "\${str.profile}") lateinit var strprofile: String
   @Autowired lateinit var refererCheckFilter: RefererCheckFilter
   @Autowired lateinit var jwtTokenProvider: JwtTokenProvider
   @Autowired lateinit var ipControlService: IPControlService
@@ -38,7 +40,7 @@ class SecurityConfiguration {
         it.authenticationEntryPoint(CustomAuthenticationEntryPoint())
         it.accessDeniedHandler(CustomAccessDeniedHandler())
       }
-      .addFilterBefore(refererCheckFilter, UsernamePasswordAuthenticationFilter::class.java)
+      .addFilterBefore(refererCheckFilter.setStrProfile(strprofile), UsernamePasswordAuthenticationFilter::class.java)
 //      .addFilterBefore(JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter::class.java)
       .addFilterBefore(IPFilter(ipControlService), HeaderWriterFilter::class.java)
       .addFilterAfter(LogFilter(angularCommonService), AuthorizationFilter::class.java)
