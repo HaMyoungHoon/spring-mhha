@@ -19,4 +19,8 @@ interface VideoCategoryRepository: JpaRepository<VideoCategoryModel, Long> {
 
 	@Query("SELECT * FROM VideoCategoryModel WHERE dirName = :dirName AND videoCategory_thisIndex IS NULL", nativeQuery = true)
 	fun findRootDirName(dirName: String): VideoCategoryModel?
+	@Query("SELECT * FROM VideoCategoryModel WHERE videoCategory_thisIndex IS NULL", nativeQuery = true)
+	fun findRoot(): List<VideoCategoryModel>?
+	@Query("SELECT * FROM VideoCategoryModel WHERE videoCategoryState = 0 AND videoCategory_thisIndex IS NULL", nativeQuery = true)
+	fun findRootStateOK(): List<VideoCategoryModel>?
 }

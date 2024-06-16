@@ -27,7 +27,11 @@ class VideoController {
 	fun getVideoCategoryList(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 													 @RequestParam(required = false) isDesc: Boolean?) =
 		responseService.getResult(videoStreamService.getVideoCategoryList(token, isDesc ?: true))
-	@GetMapping("/get/category/list/")
+	@GetMapping("/get/category/list/root")
+	fun getVideoCategoryRootList(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
+	                             @RequestParam(required = false) isDesc: Boolean?) =
+		responseService.getResult(videoStreamService.getFindRootOnlyRoot(token, isDesc ?: true))
+	@GetMapping("/get/category/list/withVideo")
 	@CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
 	fun getVideoCategoryWithChild(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                              @Schema(description = "root/path/path 이렇게 해야함") @RequestParam(required = true) dirName: String,
@@ -102,9 +106,12 @@ class VideoController {
 	                 @Schema(description = "root/path/path 이렇게 해야함") @RequestParam(required = false) parentName: String?,
 									 @RequestBody data: VideoCategoryModel) =
 		if (data.dirName.isEmpty()) throw NotValidOperationException()
-		else if (videoStreamService.getVideoCategory(data.dirName) != null) throw ResourceAlreadyExistException()
 		else responseService.getResult(videoStreamService.addVideoCategory(token,
-			if (parentName != null) getFindRootChild(parentName).apply { children?.add(data); setChild() }
+			if (parentName != null) getFindRootChild(parentName).apply {
+				if (this.children?.any { x -> x.dirName == data.dirName } == true) throw ResourceAlreadyExistException()
+				children?.add(data)
+				setChild()
+			}
 			else data.setChild()))
 	@PostMapping("/post/video")
 	@Operation(summary = "post video path", description = "실제로 video file 을 업로드 하는 것은 아님.")
@@ -125,6 +132,7 @@ class VideoController {
 				val buff = child.children?.firstOrNull { y -> y.dirName == x[i] } ?: throw ResourceNotExistException()
 				child = buff
 			}
+			child.init()
 			child
 		}
 }

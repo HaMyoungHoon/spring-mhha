@@ -30,19 +30,22 @@ class VideoStreamService {
 	@Autowired lateinit var jwtTokenProvider: JwtTokenProvider
 	@Autowired lateinit var fExt: FExtensions
 
+	fun getFindRootOnlyRoot(token: String?, isDesc: Boolean = true) =
+		if(isAdmin(token, false)) videoCategoryRepository.findRoot()?.onEach { x -> x.children = null; x.init() }
+		else videoCategoryRepository.findRootStateOK()?.onEach { x -> x.children = null; x.init() }
 	fun getFindRootDir(dirName: String) = videoCategoryRepository.findRootDirName(dirName)
 	fun getVideoCategory(thisIndex: Long) = videoCategoryRepository.findByThisIndex(thisIndex)?.apply { init() }
 	fun getVideoCategory(dirName: String) = videoCategoryRepository.findByDirName(dirName)?.apply { init() }
 	fun getVideoCategoryWithVideo(dirName: String) = videoCategoryRepository.findByDirName(dirName)?.apply { getVideoList(this) }
 	fun getVideoCategoryList(token: String?, isDesc: Boolean = true) =
 		if (isAdmin(token, false)) getVideoCategoryList(isDesc)
-		else getVideoCategoryListByStateOK(isDesc)
+		else getVideoCategoryListByStateNotDelete(isDesc)
 	private fun getVideoCategoryList(isDesc: Boolean = true) =
 		if (isDesc) videoCategoryRepository.findAllByVideoCategoryOrderByThisIndexDesc(null)?.onEach { x -> x.init() }
 		else videoCategoryRepository.findAllByVideoCategoryOrderByThisIndexAsc(null)?.onEach { x -> x.init() }
-	private fun getVideoCategoryListByStateOK(isDesc: Boolean) =
-		if (isDesc) videoCategoryRepository.findAllByVideoCategoryAndVideoCategoryStateNotOrderByThisIndexDesc(null, VideoCategoryState.DELETE)?.onEach { x -> x.init() }
-		else videoCategoryRepository.findAllByVideoCategoryAndVideoCategoryStateNotOrderByThisIndexAsc(null, VideoCategoryState.DELETE)?.onEach { x -> x.init() }
+	private fun getVideoCategoryListByStateNotDelete(isDesc: Boolean) =
+		if (isDesc) videoCategoryRepository.findAllByVideoCategoryAndVideoCategoryStateNotOrderByThisIndexDesc(null, VideoCategoryState.DISABLE)?.onEach { x -> x.children?.removeAll { y -> y.videoCategoryState == VideoCategoryState.DISABLE}; x.init() }
+		else videoCategoryRepository.findAllByVideoCategoryAndVideoCategoryStateNotOrderByThisIndexAsc(null, VideoCategoryState.DISABLE)?.onEach { x -> x.children?.removeAll { y -> y.videoCategoryState == VideoCategoryState.DISABLE}; x.init() }
 	fun getVideoCategoryWithChild(token: String?, thisIndex: Long, isDesc: Boolean = true) =
 		if (isAdmin(token, false)) videoCategoryRepository.findByThisIndex(thisIndex)?.apply { setVideoCategoryVideo(token, this, isDesc) }
 		else videoCategoryRepository.findByVideoCategoryStateAndThisIndex(VideoCategoryState.OK, thisIndex)?.apply { setVideoCategoryVideo(token, this, isDesc) }
@@ -108,8 +111,8 @@ class VideoStreamService {
 		if (isDesc) videoRepository.findAllByFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateDesc(searchString, searchString, searchString)
 		else videoRepository.findAllByFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateAsc(searchString, searchString, searchString)
 	private fun searchVideoByStateOK(searchString: String, isDesc: Boolean = false) =
-		if (isDesc) videoRepository.findAllByFileStateAfterAndFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateDesc(FileState.OK, searchString, searchString, searchString)
-		else videoRepository.findAllByFileStateAfterAndFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateAsc(FileState.OK, searchString, searchString, searchString)
+		if (isDesc) videoRepository.findAllByFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateDesc(searchString, searchString, searchString)?.apply { removeAll { x -> x.fileState != FileState.OK } }
+		else videoRepository.findAllByFileNameContainingOrTitleContainingOrHashTagContainingOrderByFileDateAsc(searchString, searchString, searchString)?.apply { removeAll { x -> x.fileState != FileState.OK } }
 
 	fun getVideoByNameStream(token: String?, fileName: String) = getVideoStreamingBodyAsync(
 		if (isAdmin(token, false)) videoRepository.findByFileName(fileName)
@@ -251,6 +254,7 @@ class VideoStreamService {
 	}
 	@Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
 	fun addVideo(token: String?, data: VideoModel): VideoModel {
+		data.hashTag = data.hashTag.replace(" ", "_")
 		isAdmin(token)
 		return videoRepository.save(data)
 	}
