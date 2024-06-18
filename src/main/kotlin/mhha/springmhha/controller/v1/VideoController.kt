@@ -67,35 +67,35 @@ class VideoController {
 	                @RequestParam(required = false) isDesc: Boolean?) =
 		responseService.getResult(videoStreamService.searchVideo(token, searchString, isDesc ?: false))
 
-	@GetMapping("/get/play/stream/name/{name}")
+	@GetMapping(value = ["/get/play/stream/name/{name}/{${JwtTokenProvider.authToken}}", "/get/play/stream/name/{name}"])
 	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
-	fun getVideoNameStream(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
+	fun getVideoNameStream(@PathVariable(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                       @PathVariable(required = true) name: String) =
 		videoStreamService.getVideoByNameStream(token, name)
-	@GetMapping("/get/play/stream/index/{index}")
+	@GetMapping(value = ["/get/play/stream/index/{index}/{${JwtTokenProvider.authToken}}", "/get/play/stream/index/{index}"])
 	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
-	fun getVideoIndexStream(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
+	fun getVideoIndexStream(@PathVariable(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                        @PathVariable(required = true) index: Long) =
 		videoStreamService.getVideoByIndexStream(token, index)
-	@GetMapping("/get/play/resource/name/{name}")
+	@GetMapping(value = ["/get/play/resource/name/{name}/{${JwtTokenProvider.authToken}}", "/get/play/resource/name/{name}"])
 	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
-	fun getVideoNameResource(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
+	fun getVideoNameResource(@PathVariable(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                         @PathVariable(required = true) name: String) =
 		videoStreamService.getVideoByNameResource(token, name)
-	@GetMapping("/get/play/resource/index/{index}")
+	@GetMapping(value = ["/get/play/resource/index/{index}/{${JwtTokenProvider.authToken}}", "/get/play/resource/index/{index}"])
 	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
-	fun getVideoIndexResource(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
+	fun getVideoIndexResource(@PathVariable(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                          @PathVariable(required = true) index: Long) =
 		videoStreamService.getVideoByIndexResource(token, index)
-	@GetMapping("/get/play/byte/name/{name}")
+	@GetMapping(value = ["/get/play/byte/name/{name}/{${JwtTokenProvider.authToken}}", "/get/play/byte/name/{name}"])
 	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
-	fun getVideoNameByte(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
+	fun getVideoNameByte(@PathVariable(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                     @RequestHeader(value = "Range", required = false) httpRangeList: String?,
 	                     @PathVariable(required = true) name: String) =
 		videoStreamService.getVideoByNameByte(token, name, httpRangeList)
-	@GetMapping("/get/play/byte/index/{index}")
+	@GetMapping(value = ["/get/play/byte/index/{index}/{${JwtTokenProvider.authToken}}", "/get/play/byte/index/{index}"])
 	@CrossOrigin(origins = [FConstants.HTTP_FRONT_1, FConstants.HTTPS_FRONT_1], allowedHeaders = ["*"])
-	fun getVideoIndexByte(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
+	fun getVideoIndexByte(@PathVariable(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                      @RequestHeader(value = "Range", required = false) httpRangeList: String?,
 	                      @PathVariable(required = true) index: String) =
 		Mono.just(videoStreamService.getVideoByIndexByte(token, index.toLong(), httpRangeList))
