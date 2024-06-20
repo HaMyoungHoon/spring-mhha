@@ -41,11 +41,11 @@ class VideoStreamService {
 		if (isAdmin(token, false)) getVideoCategoryList(isDesc)
 		else getVideoCategoryListByStateNotDelete(isDesc)
 	private fun getVideoCategoryList(isDesc: Boolean = true) =
-		if (isDesc) videoCategoryRepository.findAllByVideoCategoryOrderByThisIndexDesc(null)?.onEach { x -> x.init() }
-		else videoCategoryRepository.findAllByVideoCategoryOrderByThisIndexAsc(null)?.onEach { x -> x.init() }
+		if (isDesc) videoCategoryRepository.findAllByVideoCategoryOrderByDirNameDesc(null)?.onEach { x -> x.init() }
+		else videoCategoryRepository.findAllByVideoCategoryOrderByDirNameAsc(null)?.onEach { x -> x.init() }
 	private fun getVideoCategoryListByStateNotDelete(isDesc: Boolean) =
-		if (isDesc) videoCategoryRepository.findAllByVideoCategoryAndVideoCategoryStateNotOrderByThisIndexDesc(null, VideoCategoryState.DISABLE)?.onEach { x -> x.children?.removeAll { y -> y.videoCategoryState == VideoCategoryState.DISABLE}; x.init() }
-		else videoCategoryRepository.findAllByVideoCategoryAndVideoCategoryStateNotOrderByThisIndexAsc(null, VideoCategoryState.DISABLE)?.onEach { x -> x.children?.removeAll { y -> y.videoCategoryState == VideoCategoryState.DISABLE}; x.init() }
+		if (isDesc) videoCategoryRepository.findAllByVideoCategoryAndVideoCategoryStateNotOrderByDirNameDesc(null, VideoCategoryState.DISABLE)?.onEach { x -> x.children?.removeAll { y -> y.videoCategoryState == VideoCategoryState.DISABLE}; x.init() }
+		else videoCategoryRepository.findAllByVideoCategoryAndVideoCategoryStateNotOrderByDirNameAsc(null, VideoCategoryState.DISABLE)?.onEach { x -> x.children?.removeAll { y -> y.videoCategoryState == VideoCategoryState.DISABLE}; x.init() }
 	fun getVideoCategoryWithChild(token: String?, thisIndex: Long, isDesc: Boolean = true) =
 		if (isAdmin(token, false)) videoCategoryRepository.findByThisIndex(thisIndex)?.apply { setVideoCategoryVideo(token, this, isDesc) }
 		else videoCategoryRepository.findByVideoCategoryStateAndThisIndex(VideoCategoryState.OK, thisIndex)?.apply { setVideoCategoryVideo(token, this, isDesc) }
@@ -254,7 +254,7 @@ class VideoStreamService {
 	}
 	@Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
 	fun addVideo(token: String?, data: VideoModel): VideoModel {
-		data.hashTag = data.hashTag.replace(" ", "_")
+		data.hashTag = data.hashTag.replace(" ", "")
 		isAdmin(token)
 		return videoRepository.save(data)
 	}
