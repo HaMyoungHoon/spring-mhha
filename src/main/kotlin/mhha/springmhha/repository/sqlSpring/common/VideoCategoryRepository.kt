@@ -17,10 +17,10 @@ interface VideoCategoryRepository: JpaRepository<VideoCategoryModel, Long> {
 	fun findByVideoCategoryStateAndThisIndex(videoCategoryState: VideoCategoryState, thisIndex: Long): VideoCategoryModel?
 	fun findByVideoCategoryStateAndDirName(videoCategoryState: VideoCategoryState, dirName: String): VideoCategoryModel?
 
-	@Query("SELECT * FROM VideoCategoryModel WHERE dirName = :dirName AND videoCategory_thisIndex IS NULL", nativeQuery = true)
+	@Query("SELECT * FROM VideoCategoryModel WHERE dirName = :dirName AND videoCategory_thisIndex IS NULL ORDER BY dirName", nativeQuery = true)
 	fun findRootDirName(dirName: String): VideoCategoryModel?
-	@Query("SELECT * FROM VideoCategoryModel WHERE videoCategory_thisIndex IS NULL", nativeQuery = true)
+	@Query("SELECT * FROM VideoCategoryModel WHERE videoCategory_thisIndex IS NULL ORDER BY dirName", nativeQuery = true)
 	fun findRoot(): List<VideoCategoryModel>?
-	@Query("SELECT * FROM VideoCategoryModel WHERE videoCategoryState = 0 AND videoCategory_thisIndex IS NULL", nativeQuery = true)
+	@Query("SELECT * FROM VideoCategoryModel WHERE videoCategoryState = 0 AND videoCategory_thisIndex IS NULL ORDER BY dirName", nativeQuery = true)
 	fun findRootStateOK(): List<VideoCategoryModel>?
 }
