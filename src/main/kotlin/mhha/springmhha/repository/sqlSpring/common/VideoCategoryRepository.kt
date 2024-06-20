@@ -8,10 +8,10 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface VideoCategoryRepository: JpaRepository<VideoCategoryModel, Long> {
-	fun findAllByVideoCategoryOrderByThisIndexDesc(videoCategory: VideoCategoryModel?): List<VideoCategoryModel>?
-	fun findAllByVideoCategoryOrderByThisIndexAsc(videoCategory: VideoCategoryModel?): List<VideoCategoryModel>?
-	fun findAllByVideoCategoryAndVideoCategoryStateNotOrderByThisIndexDesc(videoCategory: VideoCategoryModel?, videoCategoryState: VideoCategoryState): List<VideoCategoryModel>?
-	fun findAllByVideoCategoryAndVideoCategoryStateNotOrderByThisIndexAsc(videoCategory: VideoCategoryModel?, videoCategoryState: VideoCategoryState): List<VideoCategoryModel>?
+	fun findAllByVideoCategoryOrderByDirNameDesc(videoCategory: VideoCategoryModel?): List<VideoCategoryModel>?
+	fun findAllByVideoCategoryOrderByDirNameAsc(videoCategory: VideoCategoryModel?): List<VideoCategoryModel>?
+	fun findAllByVideoCategoryAndVideoCategoryStateNotOrderByDirNameDesc(videoCategory: VideoCategoryModel?, videoCategoryState: VideoCategoryState): List<VideoCategoryModel>?
+	fun findAllByVideoCategoryAndVideoCategoryStateNotOrderByDirNameAsc(videoCategory: VideoCategoryModel?, videoCategoryState: VideoCategoryState): List<VideoCategoryModel>?
 	fun findByThisIndex(thisIndex: Long): VideoCategoryModel?
 	fun findByDirName(dirName: String): VideoCategoryModel?
 	fun findByVideoCategoryStateAndThisIndex(videoCategoryState: VideoCategoryState, thisIndex: Long): VideoCategoryModel?
