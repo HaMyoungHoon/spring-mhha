@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.io.File
 import java.net.URI
 
 @Tag(name = "RedirectController")
@@ -22,5 +23,11 @@ class RedirectController {
 		return ResponseEntity<IRestResult>(HttpHeaders().apply {
 			location = URI.create("/swagger-ui/index.html")
 		}, HttpStatus.MOVED_PERMANENTLY)
+	}
+	@GetMapping(value = ["ads.txt"])
+	fun adsTxt(): String {
+		return File("./ads.txt").bufferedReader().let { x ->
+			x.use { y -> y.readText() }
+		}
 	}
 }
