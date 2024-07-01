@@ -69,10 +69,11 @@ class AngularCommonService {
         if (isDesc) writeDirectoryRepository.findAllByWriteDirectoryOrderByThisIndexDesc(null)?.onEach { x -> x.initFile() }
         else writeDirectoryRepository.findAllByWriteDirectoryOrderByThisIndexAsc(null)?.onEach { x -> x.initFile() }
     fun getWriteDirectoryName(name: String) = writeDirectoryRepository.findByDirName(name)?.apply { initFile() }
-    fun getWriteDirectoryNameWithFile(name: String) = writeDirectoryRepository.findByDirName(name)?.apply { setWriteFiles(this) }
-    fun setWriteFiles(writeDirectory: WriteDirectory) {
-        writeDirectory.writeFiles = writeFileRepository.findAllByWriteDirectory(writeDirectory).toMutableList()
-        writeDirectory.children?.forEach { x -> setWriteFiles(x) }
+    fun getWriteDirectoryNameWithFile(token: String?, name: String) = writeDirectoryRepository.findByDirName(name)?.apply { setWriteFiles(token, this) }
+    fun setWriteFiles(token: String?, writeDirectory: WriteDirectory) {
+        writeDirectory.writeFiles = if (isAdmin(token, false)) writeFileRepository.findAllByWriteDirectoryWithoutContent(writeDirectory.thisIndex).toMutableList()
+        else writeFileRepository.findAllByWriteDirectoryAndStatusNotWithoutContent(writeDirectory.thisIndex, WriteFileStatus.Delete).toMutableList()
+        writeDirectory.children?.forEach { x -> setWriteFiles(token, x) }
     }
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
     fun addWriteDirectory(token: String, data: WriteDirectory): WriteDirectory =
@@ -84,9 +85,13 @@ class AngularCommonService {
     fun getWriteFileAll(token: String): List<WriteFile>? =
         jwtTokenProvider.getUserData(token).let { x ->
             if (UserRole.fromFlag(x.role).contains(UserRole.Admin)) writeFileRepository.findAll()
-            else writeFileRepository.findAllByAuthIndexOrderByThisIndexDesc(x.thisIndex)
+            else writeFileRepository.findAllByAuthIndexAndStatusNotOrderByThisIndexDesc(x.thisIndex, WriteFileStatus.Delete)
         }
-    fun getWriteFileName(name: String) = writeFileRepository.findByName(name)
+    fun getWriteFileIndex(token: String?, index: Long) = if (isAdmin(token, false)) writeFileRepository.findByThisIndex(index)
+    else writeFileRepository.findByThisIndexAndStatusNot(index, WriteFileStatus.Delete)
+    fun getWriteFileName(token: String?, name: String) = if (isAdmin(token, false)) writeFileRepository.findByName(name)
+    else writeFileRepository.findByNameAndStatusNot(name, WriteFileStatus.Delete)
+
     @Transactional(SpringJPAConfig.TRANSACTION_MANAGER)
     fun addWriteFile(token: String, data: WriteFile): WriteFile =
         isAdmin(token).let { _ ->

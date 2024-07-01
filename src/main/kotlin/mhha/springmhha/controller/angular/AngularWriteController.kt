@@ -50,14 +50,20 @@ class AngularWriteController {
 	}
 
 	@GetMapping(value = ["/get/directory/name/files"])
-	fun getDirectoryNameWithFiles(@RequestParam name: String) =
-		responseService.getResult(angularCommonService.getWriteDirectoryNameWithFile(name))
+	fun getDirectoryNameWithFiles(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
+	                              @RequestParam name: String) =
+		responseService.getResult(angularCommonService.getWriteDirectoryNameWithFile(token, name))
 	@GetMapping(value = ["/get/file/all"])
 	fun getWriteFileAll(@RequestHeader(value = JwtTokenProvider.authToken) token: String) =
 		responseService.getResult(angularCommonService.getWriteFileAll(token))
+	@GetMapping(value = ["/get/file/index"])
+	fun getWriteFileIndex(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
+	                      @RequestParam index: Long) =
+		responseService.getResult(angularCommonService.getWriteFileIndex(token, index))
 	@GetMapping(value = ["/get/file/name"])
-	fun getWriteFileName(@RequestParam name: String) =
-		responseService.getResult(angularCommonService.getWriteFileName(name))
+	fun getWriteFileName(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
+	                     @RequestParam name: String) =
+		responseService.getResult(angularCommonService.getWriteFileName(token, name))
 	@PostMapping(value = ["/post/file"])
 	@CrossOrigin(origins = [FConstants.HTTP_MHHA, FConstants.HTTPS_MHHA], allowedHeaders = ["*"])
 	fun postWriteFile(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
@@ -75,7 +81,7 @@ class AngularWriteController {
 	fun putWriteFile(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
 	                 @RequestParam(required = true) fileName: String,
 	                 @RequestBody content: String): IRestResult {
-		val file = angularCommonService.getWriteFileName(fileName) ?: throw ResourceNotExistException()
+		val file = angularCommonService.getWriteFileName(token, fileName) ?: throw ResourceNotExistException()
 		file.content = content
 		return responseService.getResult(angularCommonService.editWriteFile(token, file))
 	}
@@ -84,7 +90,7 @@ class AngularWriteController {
 	fun putWriteFileMove(@RequestHeader(value = JwtTokenProvider.authToken) token: String,
 	                     @RequestParam(required = true) fileName: String,
 	                     @RequestParam(required = true) dirName: String): IRestResult {
-		val file = angularCommonService.getWriteFileName(fileName) ?: throw ResourceNotExistException()
+		val file = angularCommonService.getWriteFileName(token, fileName) ?: throw ResourceNotExistException()
 		val dir = angularCommonService.getWriteDirectoryName(dirName) ?: throw ResourceNotExistException()
 		file.writeDirectory = dir
 		return responseService.getResult(angularCommonService.editWriteFile(token, file))
