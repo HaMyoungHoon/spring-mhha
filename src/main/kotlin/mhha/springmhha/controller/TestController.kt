@@ -1,5 +1,6 @@
 package mhha.springmhha.controller
 
+import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.tags.Tag
 import mhha.springmhha.config.FConstants
 import mhha.springmhha.config.security.JwtTokenProvider
@@ -20,6 +21,7 @@ class TestController {
     fun signIn(@RequestParam(required = true) id: String, @RequestParam(required = true) pw: String): IRestResult {
         return responseService.getResult(userDataService.signIn(id, pw))
     }
+    @Hidden
     @GetMapping(value = ["/token"])
     fun getUer(@RequestHeader(value = JwtTokenProvider.authToken) token: String): IRestResult {
         return responseService.getResult(userDataService.getUserDataToken(token))
