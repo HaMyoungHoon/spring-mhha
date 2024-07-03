@@ -14,7 +14,7 @@ import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler
 
 @Configuration
 class MqttConfig {
-	@Value(value = "\${mqtt.brokerUrl}") lateinit var brokerUrl: String
+	@Value(value = "\${mqtt.brokerUrl1}") lateinit var brokerUrl1: String
 	@Value(value = "\${mqtt.clientId}") lateinit var clientId: String
 	@Value(value = "\${mqtt.username}") lateinit var userName: String
 	@Value(value = "\${mqtt.password}") lateinit var password: String
@@ -44,11 +44,11 @@ class MqttConfig {
 //	}
 	@Bean
 	@ServiceActivator(inputChannel = "mqttOutboundChannel")
-	fun mqttOutbound() = MqttPahoMessageHandler(brokerUrl, clientId, mqttClientFactory()).apply {
+	fun mqttOutbound() = MqttPahoMessageHandler(brokerUrl1, clientId, mqttClientFactory()).apply {
 		setAsync(true)
 	}
 	@Bean
-	fun sendMessageFlow() = IntegrationFlow.from("mqttOutboundChannel")
+	fun sendMessageFlow() = IntegrationFlow.from(mqttOutboundChannel())
 		.handle(mqttOutbound())
 		.get()
 }
