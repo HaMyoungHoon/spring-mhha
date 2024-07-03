@@ -13,6 +13,7 @@ import org.springframework.integration.support.MessageBuilder
 import org.springframework.messaging.MessageChannel
 import org.springframework.stereotype.Service
 import java.lang.Exception
+import java.nio.charset.StandardCharsets
 
 @Service
 class MqttService {
@@ -30,11 +31,11 @@ class MqttService {
 		else MqttConnectModel(getBrokerUrl(), getDefaultTopic(guid), this.userName, this.password)
 	fun sendMessage(token: String? = null, guid: String? = null, topic: String, payload: String) {
 		val msg = if (isAdmin(token, false)) {
-			MessageBuilder.withPayload(payload)
+			MessageBuilder.withPayload(payload.toByteArray(StandardCharsets.UTF_8))
 				.setHeader("mqtt_topic", topic)
 				.build()
 		} else {
-			MessageBuilder.withPayload(payload)
+			MessageBuilder.withPayload(payload.toByteArray(StandardCharsets.UTF_8))
 				.setHeader("mqtt_topic", "test/${guid}")
 				.build()
 		}
