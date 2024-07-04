@@ -27,6 +27,7 @@ class MqttController {
 	fun getSubscribeData(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                     @PathVariable(value = "guid", required = false) guid: String?): IRestResult =
 		responseService.getResult(mqttService.getMqttConnectData(token, guid))
+	@Hidden
 	@PostMapping(value = ["/post/publish/{guid}", "/post/publish"])
 	fun postPublish(@RequestHeader(value = JwtTokenProvider.authToken, required = false) token: String?,
 	                @PathVariable(value = "guid", required = false) guid: String?,
