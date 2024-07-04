@@ -14,6 +14,10 @@ object FConstants {
 
 	const val HTTP_FRONT_1 = "http://angular.mhha.kr"
 	const val HTTPS_FRONT_1 = "https://angular.mhha.kr"
+	const val HTTP_FRONT_2 = "http://www.mhha.kr"
+	const val HTTPS_FRONT_2 = "https://www.mhha.kr"
+	const val HTTP_FRONT_3 = "http://mhha.kr"
+	const val HTTPS_FRONT_3 = "https://mhha.kr"
 
 	const val CONTENT_TYPE = "Content-Type"
 	const val CONTENT_LENGTH = "Content-Length"

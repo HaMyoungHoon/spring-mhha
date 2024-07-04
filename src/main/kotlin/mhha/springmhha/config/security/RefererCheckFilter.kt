@@ -25,12 +25,26 @@ class RefererCheckFilter : HttpFilter() {
 		}
 
 		val referer = request.getHeader("Referer")
-		if (referer.startsWith(FConstants.HTTP_FRONT_1) || referer.startsWith(FConstants.HTTPS_FRONT_1)) {
+		if (refererStartWithFront(referer)) {
 			chain?.doFilter(request, response)
 			return
 		}
 
 		response?.sendRedirect("/v1/exception/accessDenied")
+	}
+
+	fun refererStartWithFront(referer: String): Boolean {
+		if (referer.startsWith(FConstants.HTTP_FRONT_1) || referer.startsWith(FConstants.HTTPS_FRONT_1)) {
+			return true
+		}
+		if (referer.startsWith(FConstants.HTTP_FRONT_2) || referer.startsWith(FConstants.HTTPS_FRONT_2)) {
+			return true
+		}
+		if (referer.startsWith(FConstants.HTTP_FRONT_3) || referer.startsWith(FConstants.HTTPS_FRONT_3)) {
+			return true
+		}
+
+		return false
 	}
 
 	fun setStrProfile(strProfile: String): RefererCheckFilter {
